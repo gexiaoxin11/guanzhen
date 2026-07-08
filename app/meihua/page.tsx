@@ -3,11 +3,11 @@
 import { runMeihua, type MeihuaInput, type MeihuaOutput } from "../../src/lib/taibu";
 import { useState } from "react";
 import "../../src/styles.css";
-import { TIME_OPTIONS } from "../ziwei-time";
+import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 
 export default function MeihuaPage() {
   const [question, setQuestion] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [birthDate, setBirthDate] = useState(new Date().toISOString().slice(0, 10));
   const [timeIndex, setTimeIndex] = useState(0);
   const [method, setMethod] = useState<MeihuaInput["method"]>("time");
   const [num1, setNum1] = useState("");
@@ -33,7 +33,9 @@ export default function MeihuaPage() {
   ];
 
   function buildInput(): MeihuaInput {
-    const base: MeihuaInput = { question: question.trim() || "问事", date };
+    const h = HOUR_STARTS[timeIndex] || 12;
+    const dateStr = `${birthDate}T${String(h).padStart(2, "0")}:00:00`;
+    const base: MeihuaInput = { question: question.trim() || "问事", date: dateStr };
     if (method === "time") return { ...base, method: "time" };
     if (method === "number_pair") return { ...base, method: "number_pair", numbers: [parseInt(num1) || 1, parseInt(num2) || 1] };
     if (method === "number_triplet") return { ...base, method: "number_triplet", numbers: [parseInt(num1) || 1, parseInt(num2) || 1, parseInt(num3) || 1] };
@@ -138,8 +140,8 @@ export default function MeihuaPage() {
             <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>日期</label>
             <input
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
               style={{
                 width: "100%",
                 border: "1px solid rgba(51,51,51,0.14)",
