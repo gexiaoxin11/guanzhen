@@ -231,7 +231,7 @@ export default function MeihuaPage() {
             padding: "14px 0",
             border: "none",
             borderRadius: 12,
-            background: loading ? "var(--ink-faint)" : "linear-gradient(135deg, var(--gold), var(--gold-dark))",
+            background: loading ? "var(--ink-faint)" : "var(--gold)",
             color: "#fff",
             fontSize: 17,
             fontWeight: 700,
@@ -411,7 +411,7 @@ export default function MeihuaPage() {
                   padding: "12px 40px",
                   border: "none",
                   borderRadius: 12,
-                  background: aiLoading ? "var(--ink-faint)" : "linear-gradient(135deg, var(--gold), var(--gold-dark))",
+                  background: aiLoading ? "var(--ink-faint)" : "var(--gold)",
                   color: "#fff",
                   fontSize: 16,
                   fontWeight: 600,
@@ -439,7 +439,7 @@ export default function MeihuaPage() {
                 }}>
                   <div style={{
                     padding: "12px 18px",
-                    background: "linear-gradient(135deg, var(--gold-dark), var(--gold))",
+                    background: "var(--gold)",
                     color: "#fff",
                     fontSize: 15,
                     fontWeight: 600,

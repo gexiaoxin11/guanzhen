@@ -302,7 +302,7 @@ export default function QimenPage() {
           padding: 12px 52px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, var(--ink), #555);
+          background: var(--gold), #555);
           color: var(--surface-strong);
           font-size: 16px;
           font-weight: 600;
@@ -313,7 +313,7 @@ export default function QimenPage() {
         }
 
         .qimen-submit:hover {
-          background: linear-gradient(135deg, #222, var(--ink));
+          background: var(--gold));
           transform: translateY(-1px);
           box-shadow: 0 4px 20px rgba(51, 51, 51, 0.22);
         }
@@ -502,7 +502,7 @@ export default function QimenPage() {
           padding: 12px 40px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, #D44115, #e85d3a);
+          background: var(--gold);
           color: #fff;
           font-size: 16px;
           font-weight: 600;
@@ -513,7 +513,7 @@ export default function QimenPage() {
         }
 
         .qimen-ai-btn:hover {
-          background: linear-gradient(135deg, #c23a12, #D44115);
+          background: var(--gold);
           transform: translateY(-1px);
           box-shadow: 0 4px 18px rgba(212, 65, 21, 0.35);
         }
@@ -533,7 +533,7 @@ export default function QimenPage() {
 
         .qimen-ai-result-header {
           padding: 12px 18px;
-          background: linear-gradient(135deg, #317994, #3a8ba8);
+          background: var(--gold);
           color: #fff;
           font-size: 15px;
           font-weight: 600;

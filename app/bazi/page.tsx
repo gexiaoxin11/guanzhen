@@ -478,7 +478,7 @@ export default function BaziPage() {
           padding: 14px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 17px;
           font-weight: 600;
@@ -560,7 +560,7 @@ export default function BaziPage() {
           font-size: 14px;
           font-weight: 600;
           color: #fff;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: var(--gold), var(--gold-dark));
           text-align: center;
           letter-spacing: 0.06em;
         }
@@ -735,7 +735,7 @@ export default function BaziPage() {
           padding: 12px 40px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 16px;
           font-weight: 600;
@@ -759,7 +759,7 @@ export default function BaziPage() {
         }
         .bazi-ai-result-header {
           padding: 12px 18px;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 15px;
           font-weight: 600;

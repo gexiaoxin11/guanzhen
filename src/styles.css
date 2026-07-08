@@ -1681,11 +1681,12 @@ input:focus {
 }
 .ziwei-form-row input:focus, .ziwei-form-row select:focus { border-color: var(--gold); }
 .ziwei-submit {
-  min-height: 38px; border: 0; border-radius: 9px; background: var(--ink);
-  color: var(--surface-strong); padding: 0 20px; font-size: 13px; white-space: nowrap;
-  cursor: pointer;
+  min-height: 38px; border: 0; border-radius: 9px; background: var(--gold);
+  color: #ffffff; padding: 0 20px; font-size: 13px; font-weight: 600; white-space: nowrap;
+  cursor: pointer; transition: background 0.2s;
 }
 .ziwei-submit:hover { background: var(--gold-dark); }
+.ziwei-submit:disabled { opacity: 0.45; cursor: not-allowed; }
 .ziwei-error { margin: 10px 0 0; color: var(--red); font-size: 13px; }
 
 /* Summary */

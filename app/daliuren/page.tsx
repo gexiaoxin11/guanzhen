@@ -231,7 +231,7 @@ export default function DaliurenPage() {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "24px 0 10px" }}>
               <button onClick={handleAiReading} disabled={aiLoading} style={{
                 padding: "12px 40px", border: "none", borderRadius: 12,
-                background: "linear-gradient(135deg, var(--gold), #e85d3a)",
+                background: "var(--gold)",
                 color: "#fff", fontSize: 16, fontWeight: 600, letterSpacing: "0.04em",
                 cursor: aiLoading ? "not-allowed" : "pointer", opacity: aiLoading ? 0.6 : 1,
                 boxShadow: "0 2px 12px rgba(212,65,21,0.25)", transition: "all 0.2s",
@@ -244,7 +244,7 @@ export default function DaliurenPage() {
                   borderRadius: 14, overflow: "hidden",
                 }}>
                   <div style={{
-                    padding: "12px 18px", background: "linear-gradient(135deg, #317994, #3a8ba8)",
+                    padding: "12px 18px", background: "var(--gold)",
                     color: "#fff", fontSize: 15, fontWeight: 600, letterSpacing: "0.04em",
                   }}>
                     AI 解读
