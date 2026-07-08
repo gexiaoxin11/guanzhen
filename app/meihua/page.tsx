@@ -33,7 +33,7 @@ export default function MeihuaPage() {
   ];
 
   function buildInput(): MeihuaInput {
-    const h = HOUR_STARTS[timeIndex] || 12;
+    const h = HOUR_STARTS[timeIndex] ?? 12;
     const dateStr = `${birthDate}T${String(h).padStart(2, "0")}:00:00`;
     const base: MeihuaInput = { question: question.trim() || "问事", date: dateStr };
     if (method === "time") return { ...base, method: "time" };
