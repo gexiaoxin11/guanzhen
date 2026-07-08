@@ -170,10 +170,11 @@ export function calculateLiuyao(input: LiuyaoInput): LiuyaoChart {
   const time = parseGanZhi(lunar.getTimeInGanZhi());
   const lines = buildLines(original, input.lineValues, rawLines, moving, day.gan, month.zhi, day.zhi);
   const changedLines = buildLines(changed, input.lineValues.map((value, index) => (moving[index] ? changedValue(value) : value)) as YaoValue[], changedRaw, Array(6).fill(false), day.gan, month.zhi, day.zhi, original.palaceElement);
-  attachTransformLabels(lines, changedLines);
+  const emptyBranches = findXunKong(day.text);
+  const monthBranch = month.zhi;
+  attachTransformLabels(lines, changedLines, emptyBranches, monthBranch);
   attachHiddenSpirits(lines, original, month.zhi);
   attachShenSha(lines, day.gan, day.zhi);
-  const emptyBranches = findXunKong(day.text);
   const hexRelation = getHexRelation(original, changed);
   const ruleSignals = buildRuleSignals(lines, changedLines, hexRelation, emptyBranches, month.zhi, day.zhi);
 
@@ -203,7 +204,7 @@ function changedValue(value: YaoValue): YaoValue {
   return value;
 }
 
-function attachTransformLabels(lines: YaoLine[], changedLines: YaoLine[]) {
+function attachTransformLabels(lines: YaoLine[], changedLines: YaoLine[], emptyBranches: string[], monthBranch: string) {
   for (const line of lines) {
     if (!line.moving) continue;
     const changed = changedLines[line.position - 1];
@@ -214,6 +215,20 @@ function attachTransformLabels(lines: YaoLine[], changedLines: YaoLine[]) {
     if (line.ganZhi.zhi === changed.ganZhi.zhi) labels.push("伏吟变");
     if (isProgressingBranch(line.ganZhi.zhi, changed.ganZhi.zhi)) labels.push("进神");
     if (isRetreatingBranch(line.ganZhi.zhi, changed.ganZhi.zhi)) labels.push("退神");
+
+    // 化绝、化墓、化长生、化帝旺
+    const elementStage = getTwelveStage(line.element, changed.ganZhi.zhi);
+    if (elementStage === "绝") labels.push("化绝");
+    if (elementStage === "墓") labels.push("化墓");
+    if (elementStage === "长生") labels.push("化长生");
+    if (elementStage === "帝旺") labels.push("化旺");
+
+    // 化空：变爻地支在旬空
+    if (emptyBranches.includes(changed.ganZhi.zhi)) labels.push("化空");
+
+    // 化破：变爻地支被月建冲
+    if (clashPairs[monthBranch] === changed.ganZhi.zhi) labels.push("化破");
+
     line.transformLabels = labels.length ? labels : ["发动"];
   }
 }

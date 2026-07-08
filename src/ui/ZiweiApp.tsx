@@ -109,11 +109,15 @@ export function ZiweiApp() {
     setAiLoading(true);
     setAiReading("");
     try {
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 60000);
       const resp = await fetch("/api/ziwei", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ astroData }),
+        signal: ctrl.signal,
       });
+      clearTimeout(to);
       const data = await resp.json();
       setAiReading(data.text || "分析失败，请重试");
     } catch {
@@ -571,6 +575,26 @@ export function ZiweiApp() {
                           <span className="ziwei-decadal-palace">{d.palace}</span>
                           <span className="ziwei-decadal-stars">{d.stars}</span>
                           <span className="ziwei-decadal-note">{d.note}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 宫干四化飞星 */}
+                {analysis.palaceMutagen && analysis.palaceMutagen.length > 0 && (
+                  <div className="ziwei-analysis-section">
+                    <h3>宫干四化飞星</h3>
+                    <p className="ziwei-analysis-subtitle">各宫天干飞出四化星落于何宫</p>
+                    <div className="ziwei-mutagen-grid">
+                      {analysis.palaceMutagen.slice(0, 16).map((item, i) => (
+                        <div key={i} className={`ziwei-mutagen-card mutagen-${item.label}`}>
+                          <div className="ziwei-mutagen-head">
+                            <span className="ziwei-mutagen-type">{item.fromPalace} → 化{item.label}</span>
+                            <span className="ziwei-mutagen-star">{item.star}</span>
+                          </div>
+                          <span className="ziwei-mutagen-palace">落 {item.toPalace}</span>
+                          <p className="ziwei-mutagen-note">{item.note}</p>
                         </div>
                       ))}
                     </div>

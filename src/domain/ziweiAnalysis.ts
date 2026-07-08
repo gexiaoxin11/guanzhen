@@ -184,6 +184,58 @@ function analyzeStarCombinations(palaces: PalaceData[]): Array<{ title: string; 
     combos.push({ title: "三奇嘉会格", body: "命宫汇聚禄权科三奇，才华横溢，机遇多，为一等吉格。", level: "good" });
   }
 
+  // 禄马交驰格
+  if (majorNames.includes("天马") || minorNames.includes("天马")) {
+    const hasLu = allNames.some((n) => {
+      for (const p of palaces) {
+        if ([...p.majorStars, ...p.minorStars].some((s) => s.name === n && s.mutagen === "禄")) return true;
+      }
+      return false;
+    });
+    if (hasLu) {
+      combos.push({ title: "禄马交驰格", body: "天马遇化禄，财官双美，动中得财，奔波有成。", level: "good" });
+    }
+  }
+
+  // 双禄交流格
+  const luStars = allNames.filter((n) => {
+    for (const p of palaces) {
+      if ([...p.majorStars, ...p.minorStars].some((s) => s.name === n && s.mutagen === "禄")) return true;
+    }
+    return false;
+  });
+  if (luStars.length >= 2) {
+    combos.push({ title: "双禄交流格", body: "命宫得双禄汇聚，财源广进，机遇倍增。", level: "good" });
+  }
+
+  // 明珠出海格
+  if (majorNames.includes("太阳") && majorNames.includes("巨门")) {
+    combos.push({ title: "巨日同宫格", body: "巨门太阳同守寅申，如明珠出海，光芒四射，宜公开事业。", level: "good" });
+  }
+
+  // 雄宿乾元格
+  if (majorNames.includes("廉贞") && majorNames.includes("天府")) {
+    combos.push({ title: "雄宿乾元格", body: "廉贞天府同守，廉贞之才遇天府之库，才华得以施展，名利可期。", level: "good" });
+  }
+
+  // 科权禄夹格
+  const sanfangStars = [...majorNames];
+  for (const p of palaces) {
+    const st = [...p.majorStars, ...p.minorStars];
+    if (st.some((s) => s.mutagen === "禄" || s.mutagen === "权" || s.mutagen === "科")) {
+      sanfangStars.push(...st.map((s) => s.name));
+    }
+  }
+  const hasLuQuanKe = ["禄", "权", "科"].every((m) => {
+    for (const p of palaces) {
+      if ([...p.majorStars, ...p.minorStars].some((s) => s.mutagen === m)) return true;
+    }
+    return false;
+  });
+  if (hasLuQuanKe && majorNames.length >= 1) {
+    combos.push({ title: "禄权科会格", body: "禄权科三奇汇聚命宫三方，才华、机遇、执行力兼备。", level: "good" });
+  }
+
   return combos;
 }
 
@@ -421,6 +473,50 @@ function analyzePalace(palace: PalaceData): string {
   return parts.join("；");
 }
 
+// ─── 宫干四化飞星分析 ───
+function analyzePalaceMutagen(palaces: PalaceData[]): Array<{
+  label: string;
+  star: string;
+  fromPalace: string;
+  toPalace: string;
+  note: string;
+}> {
+  const results: Array<{ label: string; star: string; fromPalace: string; toPalace: string; note: string }> = [];
+
+  for (const fromPalace of palaces) {
+    const stem = fromPalace.heavenlyStem as string;
+    const stars = MUTAGEN_MAP[stem];
+    if (!stars) continue;
+
+    for (let i = 0; i < 4; i++) {
+      const starName = stars[i];
+      const label = MUTAGEN_LABELS[i];
+
+      // Find which palace this star lands in
+      for (const toPalace of palaces) {
+        const allStars = [...toPalace.majorStars, ...toPalace.minorStars];
+        if (allStars.some((s) => s.name === starName)) {
+          const noteMap: Record<string, string> = {
+            "禄": "财禄增加，机会来临",
+            "权": "权力提升，掌控力增强",
+            "科": "名声提升，贵人相助",
+            "忌": "阻碍压力，需谨慎应对",
+          };
+          results.push({
+            label,
+            star: starName,
+            fromPalace: `${fromPalace.name}（${stem}干）`,
+            toPalace: toPalace.name,
+            note: noteMap[label] || "",
+          });
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
 // ─── 主入口 ───
 export function generateZiweiAnalysis(astroData: AstrolabeData): {
   fiveElementsClass: string;
@@ -437,6 +533,7 @@ export function generateZiweiAnalysis(astroData: AstrolabeData): {
   decadals: Array<{ palace: string; ageRange: string; stars: string; note: string }>;
   summary: string;
   palaceAnalyses: Record<string, string>;
+  palaceMutagen: Array<{ label: string; star: string; fromPalace: string; toPalace: string; note: string }>;
 } {
   const fiveElementsClass = astroData.fiveElementsClass;
   const soul = astroData.soul;
@@ -462,7 +559,11 @@ export function generateZiweiAnalysis(astroData: AstrolabeData): {
     palaceAnalyses[palace.name] = analyzePalace(palace);
   }
 
+  // 宫干四化飞星分析
+  const palaceMutagen = analyzePalaceMutagen(astroData.palaces);
+
   return {
+    palaceMutagen,
     fiveElementsClass,
     fiveElementsNote,
     soul,

@@ -338,7 +338,7 @@ export function inferScenario(topic: Topic, question: string) {
   return scenarioRules.find((rule) => rule.topic === topic && rule.patterns.some((pattern) => pattern.test(normalized)));
 }
 
-export function describeScenario(scenario: ScenarioRule) {
+function describeScenario(scenario: ScenarioRule) {
   return `场景细分：${scenario.label}\n${scenario.focus}${scenario.priority}`;
 }
 
@@ -502,7 +502,7 @@ function lineScore(line: YaoLine, chart: LiuyaoChart) {
   return score;
 }
 
-export function lineStrengthDetails(line: YaoLine, chart: LiuyaoChart) {
+function lineStrengthDetails(line: YaoLine, chart: LiuyaoChart) {
   const details: string[] = [];
   let raw = 0;
   if (line.monthState === "旺") {
@@ -547,7 +547,7 @@ export function describeLineStrength(line: YaoLine, chart: LiuyaoChart) {
   return `用神强弱约${score}/10，${level}${details.length ? `（${details.join("、")}）` : ""}。`;
 }
 
-export function isWeak(line: YaoLine, chart: LiuyaoChart) {
+function isWeak(line: YaoLine, chart: LiuyaoChart) {
   return lineScore(line, chart) <= 0 || line.monthState === "囚" || line.monthState === "死";
 }
 

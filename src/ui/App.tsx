@@ -7,7 +7,6 @@ import {
   History,
   Moon,
   RotateCcw,
-  UserRound,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { calculateLiuyao } from "../domain/liuyaoEngine";

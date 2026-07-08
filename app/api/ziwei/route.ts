@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { astroData } = body;
 
-  if (!astroData) {
+  if (!astroData || typeof astroData !== "object") {
     return NextResponse.json({ error: "缺少命盘数据" }, { status: 400 });
   }
 

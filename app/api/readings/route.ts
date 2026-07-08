@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+  if (!body.chart) return NextResponse.json({ error: "缺少卦象数据" }, { status: 400 });
   const user = await getUserFromBearer(request.headers.get("authorization"));
   const text = await generateReading({
     question: String(body.question ?? ""),
