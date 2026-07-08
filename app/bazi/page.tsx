@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { runBazi, runBaziShenSha, type BaziInput, type BaziOutput, type BaziShenShaOutput } from "../../src/lib/taibu";
+import { runBazi, runBaziShenSha, runBaziDayun, type BaziInput, type BaziOutput, type BaziShenShaOutput, type DayunOutput } from "../../src/lib/taibu";
+
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 
@@ -46,6 +47,7 @@ export default function BaziPage() {
 
   const [baziResult, setBaziResult] = useState<BaziOutput | null>(null);
   const [shenShaResult, setShenShaResult] = useState<BaziShenShaOutput | null>(null);
+  const [dayunResult, setDayunResult] = useState<DayunOutput | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +55,7 @@ export default function BaziPage() {
   const [aiResult, setAiResult] = useState("");
   const [aiError, setAiError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
     setAiResult("");
     setAiError("");
@@ -77,6 +79,15 @@ export default function BaziPage() {
       const shenSha = runBaziShenSha(input);
       setBaziResult(result);
       setShenShaResult(shenSha);
+      
+      // 计算大运（使用 taibu-core 精确算法）
+      try {
+        const dayun = await runBaziDayun({
+          birthYear: y, birthMonth: m, birthDay: d, birthHour: h, birthMinute: 0,
+          gender, calendarType, isLeapMonth: calendarType === "lunar" ? isLeapMonth : undefined,
+        });
+        setDayunResult(dayun);
+      } catch { /* dayun calc failed, ignore */ }
       setLoading(false);
     } catch (e: any) {
       setError(e?.message ?? "排盘失败");

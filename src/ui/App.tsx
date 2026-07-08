@@ -482,6 +482,7 @@ export function App() {
               <div className="shake-zone">
 <CoinOrbit active={casting} values={input.lineValues} />
                 <CastProgress casts={coinCasts} values={input.lineValues} />
+                <LiveHexagram values={input.lineValues} />
                 <button
                   type="button"
                   className="dark-action"
@@ -654,6 +655,66 @@ function CastProgress({ casts, values }: { casts: CoinCast[]; values: YaoValue[]
           <em>{cast ? cast.coins.join(" ") : "三枚铜钱"}</em>
         </div>
       ))}
+    </div>
+  );
+}
+
+function LiveHexagram({ values }: { values: YaoValue[] }) {
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 2,
+      padding: "12px 0",
+      marginTop: 8,
+    }}>
+      <div style={{ fontSize: 11, color: "var(--ink-soft)", marginBottom: 4, letterSpacing: "0.04em" }}>
+        {values.length === 0 ? "开始摇卦" : values.length === 6 ? "本卦已备" : `已摇 ${values.length} / 6 爻`}
+      </div>
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        padding: "10px 24px",
+        border: "1px solid rgba(51,51,51,0.1)",
+        borderRadius: 12,
+        background: "var(--surface-strong)",
+      }}>
+        {[5, 4, 3, 2, 1, 0].map((i) => {
+          const v = values[i];
+          const isYin = v === 6 || v === 8;
+          const isMoving = v === 6 || v === 9;
+          const hasValue = v !== undefined;
+          const color = !hasValue ? "rgba(51,51,51,0.12)" :
+            isMoving ? "var(--gold)" : "var(--ink)";
+          const symbol = !hasValue ? "待" :
+            v === 6 ? "×" : v === 9 ? "○" : isYin ? "⚋" : "⚊";
+          return (
+            <div key={i} style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              height: 32,
+              fontSize: symbol === "待" ? 12 : 22,
+              fontWeight: hasValue ? 700 : 400,
+              color,
+              transition: "all 0.3s ease",
+            }}>
+              {hasValue && <span style={{ fontSize: 10, color: "var(--ink-soft)", width: 24, textAlign: "right" }}>
+                {["初","二","三","四","五","上"][i]}
+              </span>}
+              <span style={{
+                width: 60,
+                textAlign: "center",
+                lineHeight: 1,
+                fontFamily: symbol === "待" ? "inherit" : "monospace",
+              }}>{symbol}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

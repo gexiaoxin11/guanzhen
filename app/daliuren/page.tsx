@@ -312,6 +312,19 @@ function TianDiPanView({
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: "10px 0" }}>
       <div style={{
+        position: "relative",
+        padding: 28,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, var(--surface-strong) 60%, rgba(212,65,21,0.06) 100%)",
+        border: "2px solid rgba(51,51,51,0.08)",
+        boxShadow: "0 0 40px rgba(49,121,148,0.08)",
+      }}>
+        {/* 方向标记 */}
+        <span style={{ position: "absolute", top: 4, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: "var(--red)", fontWeight: 600 }}>南</span>
+        <span style={{ position: "absolute", bottom: 4, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: "var(--ink-soft)", fontWeight: 600 }}>北</span>
+        <span style={{ position: "absolute", left: 4, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "var(--green)", fontWeight: 600 }}>东</span>
+        <span style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", fontSize: 10, color: "var(--gold-dark)", fontWeight: 600 }}>西</span>
+        <div style={{
         display: "grid",
         gridTemplateColumns: `repeat(${gridSize}, ${cellW}px)`,
         gridTemplateRows: `repeat(${gridSize}, ${cellH}px)`,
@@ -355,6 +368,7 @@ function TianDiPanView({
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

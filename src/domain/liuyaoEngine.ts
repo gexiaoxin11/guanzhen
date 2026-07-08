@@ -324,6 +324,39 @@ const yangRenMap: Record<string, string> = {
   "辛": "申", "癸": "亥",
 };
 
+const wenChangMap: Record<string, string> = {
+  "甲": "巳", "乙": "午", "丙": "申", "丁": "酉",
+  "戊": "申", "己": "酉", "庚": "亥", "辛": "子",
+  "壬": "寅", "癸": "卯",
+};
+
+const xueTangMap: Record<string, string> = {
+  "甲": "亥", "乙": "午", "丙": "寅", "丁": "酉",
+  "戊": "寅", "己": "酉", "庚": "巳", "辛": "子",
+  "壬": "申", "癸": "卯",
+};
+
+const jieShaBranches: Record<string, string> = {
+  "申": "巳", "子": "巳", "辰": "巳",
+  "寅": "亥", "午": "亥", "戌": "亥",
+  "巳": "申", "酉": "申", "丑": "申",
+  "亥": "寅", "卯": "寅", "未": "寅",
+};
+
+const zaiShaBranches: Record<string, string> = {
+  "申": "午", "子": "午", "辰": "午",
+  "寅": "子", "午": "子", "戌": "子",
+  "巳": "卯", "酉": "卯", "丑": "卯",
+  "亥": "酉", "卯": "酉", "未": "酉",
+};
+
+const tianXiBranches: Record<string, string> = {
+  "申": "酉", "子": "酉", "辰": "酉",
+  "寅": "戌", "午": "戌", "戌": "戌",
+  "巳": "丑", "酉": "丑", "丑": "丑",
+  "亥": "未", "卯": "未", "未": "未",
+};
+
 function attachShenSha(lines: YaoLine[], dayGan: string, dayZhi: string) {
   const guiRen = tianYiGuiRen[dayGan] || [];
   const yiMa = yiMaBranches[dayZhi];
@@ -332,6 +365,11 @@ function attachShenSha(lines: YaoLine[], dayGan: string, dayZhi: string) {
   const huaGai = huaGaiBranches[dayZhi];
   const jiangXing = jiangXingBranches[dayZhi];
   const yangRen = yangRenMap[dayGan];
+  const wenChang = wenChangMap[dayGan];
+  const xueTang = xueTangMap[dayGan];
+  const jieSha = jieShaBranches[dayZhi];
+  const zaiSha = zaiShaBranches[dayZhi];
+  const tianXi = tianXiBranches[dayZhi];
 
   for (const line of lines) {
     const zhi = line.ganZhi.zhi;
@@ -343,6 +381,11 @@ function attachShenSha(lines: YaoLine[], dayGan: string, dayZhi: string) {
     if (huaGai === zhi) sha.push("华盖");
     if (jiangXing === zhi) sha.push("将星");
     if (yangRen === zhi) sha.push("羊刃");
+    if (wenChang === zhi) sha.push("文昌");
+    if (xueTang === zhi) sha.push("学堂");
+    if (jieSha === zhi) sha.push("劫煞");
+    if (zaiSha === zhi) sha.push("灾煞");
+    if (tianXi === zhi) sha.push("天喜");
     line.shenSha = sha;
   }
 }
@@ -403,16 +446,30 @@ function buildRuleSignals(lines: YaoLine[], changedLines: YaoLine[], hexRelation
     const parts = shenLines.map((line) => `${line.position}爻${line.sixRelation}${line.ganZhi.text}临${line.shenSha.join("、")}`);
     const guiren = shenLines.filter((line) => line.shenSha.includes("天乙贵人"));
     const yima = shenLines.filter((line) => line.shenSha.includes("驿马"));
-    if (guiren.length) signals.push({ title: "天乙贵人", level: "good", body: parts.filter((_, i) => shenLines[i].shenSha.includes("天乙贵人")).join("；") + "，遇贵人助缘或逢化解之机。" });
+    const taohua = shenLines.filter((line) => line.shenSha.includes("桃花"));
+    const lushen = shenLines.filter((line) => line.shenSha.includes("禄神"));
+    const huagai = shenLines.filter((line) => line.shenSha.includes("华盖"));
+    const yangren = shenLines.filter((line) => line.shenSha.includes("羊刃"));
+    const wenchang = shenLines.filter((line) => line.shenSha.includes("文昌"));
+    const jiesha = shenLines.filter((line) => line.shenSha.includes("劫煞"));
+    const zaisha = shenLines.filter((line) => line.shenSha.includes("灾煞"));
+    const tianxi = shenLines.filter((line) => line.shenSha.includes("天喜"));
+    
+    if (guiren.length) signals.push({ title: "贵人", level: "good", body: parts.filter((_, i) => shenLines[i].shenSha.includes("天乙贵人")).join("；") + "，遇贵人助缘或逢化解之机。" });
+    if (lushen.length) signals.push({ title: "禄神", level: "good", body: parts.filter((_, i) => shenLines[i].shenSha.includes("禄神")).join("；") + "，临禄则衣食丰足，事有根基。" });
+    if (wenchang.length) signals.push({ title: "文昌", level: "good", body: parts.filter((_, i) => shenLines[i].shenSha.includes("文昌")).join("；") + "，文昌主文才学业，利考试文书。" });
+    if (tianxi.length) signals.push({ title: "天喜", level: "good", body: parts.filter((_, i) => shenLines[i].shenSha.includes("天喜")).join("；") + "，天喜主喜庆，宜婚嫁添丁。" });
     if (yima.length) signals.push({ title: "驿马", level: "neutral", body: parts.filter((_, i) => shenLines[i].shenSha.includes("驿马")).join("；") + "，主奔波、变动、出行之象。" });
-    // Other shensha
-    const other = shenLines.filter((line) => !line.shenSha.includes("天乙贵人") && !line.shenSha.includes("驿马"));
+    if (taohua.length) signals.push({ title: "桃花", level: "neutral", body: parts.filter((_, i) => shenLines[i].shenSha.includes("桃花")).join("；") + "，桃花主感情人缘，亦需防烂桃花。" });
+    if (huagai.length) signals.push({ title: "华盖", level: "neutral", body: parts.filter((_, i) => shenLines[i].shenSha.includes("华盖")).join("；") + "，华盖主孤独孤高，宜学术修行。" });
+    if (yangren.length) signals.push({ title: "羊刃", level: "watch", body: parts.filter((_, i) => shenLines[i].shenSha.includes("羊刃")).join("；") + "，羊刃主刚烈劫夺，慎防冲突伤害。" });
+    if (jiesha.length) signals.push({ title: "劫煞", level: "watch", body: parts.filter((_, i) => shenLines[i].shenSha.includes("劫煞")).join("；") + "，劫煞主意外破耗，慎防财物损失。" });
+    if (zaisha.length) signals.push({ title: "灾煞", level: "watch", body: parts.filter((_, i) => shenLines[i].shenSha.includes("灾煞")).join("；") + "，灾煞主突发灾祸，凡事需加倍谨慎。" });
+    // Other remaining shensha
+    const categorized = new Set(["天乙贵人","驿马","桃花","禄神","华盖","将星","羊刃","文昌","学堂","劫煞","灾煞","天喜"]);
+    const other = shenLines.filter((line) => line.shenSha.some((s) => !categorized.has(s)));
     if (other.length) {
-      signals.push({
-        title: "神煞",
-        level: "neutral",
-        body: other.map((line) => `${line.position}爻${line.sixRelation}${line.ganZhi.text}临${line.shenSha.join("、")}`).join("；"),
-      });
+      signals.push({ title: "其他神煞", level: "neutral", body: other.map((line) => `${line.position}爻${line.sixRelation}${line.ganZhi.text}临${line.shenSha.filter((s) => !categorized.has(s)).join("、")}`).join("；") });
     }
   }
   const dayCombined = lines.filter((line) => branchCombinePairs[dayBranch] === line.ganZhi.zhi);

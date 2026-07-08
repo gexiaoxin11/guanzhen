@@ -22,6 +22,68 @@ const MUTAGEN_MAP: Record<string, [string, string, string, string]> = {
 
 const MUTAGEN_LABELS = ["禄", "权", "科", "忌"];
 
+// 查找星曜所在的宫位
+function findTargetPalace(starName: string, palaces: any[]) {
+  for (const p of palaces) {
+    const allStars = [...(p.majorStars || []), ...(p.minorStars || [])];
+    if (allStars.some((s: any) => s.name === starName)) return p;
+  }
+  return null;
+}
+
+// 飞星含义描述
+function getFlyDesc(mutagen: string, from: string, to: string): string {
+  const pairs: Record<string, Record<string, string>> = {
+    "命宫": {
+      "禄": `命主主动性向${to}投放资源与情感，${to}方面易得助力。`,
+      "权": `命主有掌控${to}的欲望和能力，${to}事务上态度强势。`,
+      "科": `命主在${to}方面有名声或学识表现，以柔克刚。`,
+      "忌": `命主对${to}执着挂碍，此处为人生课题所在。`,
+    },
+    "财帛宫": {
+      "禄": `财力流向${to}，为${to}花钱大方，亦可通过${to}得财。`,
+      "权": `用钱掌控${to}局面，财务上有话语权。`,
+      "科": `在${to}方面有理财名声或靠此得名。`,
+      "忌": `为${to}破财，钱财在此处易受损。`,
+    },
+    "夫妻宫": {
+      "禄": `配偶对${to}大方投入，感情在${to}领域有甜蜜互动。`,
+      "权": `配偶掌控${to}事务，感情中需给对方空间。`,
+      "科": `配偶在${to}有名声或才华，感情因${to}连结。`,
+      "忌": `配偶对${to}执着或忧虑，感情因此处压力。`,
+    },
+    "官禄宫": {
+      "禄": `事业能量流向${to}，在${to}领域有工作机遇。`,
+      "权": `事业掌控力体现在${to}，职场上有权威。`,
+      "科": `事业名声在${to}方面，专业形象佳。`,
+      "忌": `事业压力集中于${to}，此为职业短板。`,
+    },
+    "迁移宫": {
+      "禄": `外出时在${to}方面好运，远行可得${to}之利。`,
+      "权": `在外对${to}有影响力，跨地域发展有力。`,
+      "科": `在外时${to}方面有口碑，出行遇贵人。`,
+      "忌": `外出时${to}不顺，远行需谨慎此处。`,
+    },
+    "福德宫": {
+      "禄": `内心喜欢投入${to}，精神享受源于${to}。`,
+      "权": `思想主导${to}方向，精神层面强势。`,
+      "科": `精神修养在${to}，以文雅方式应对。`,
+      "忌": `内心挂碍${to}，精神压力源于此。`,
+    },
+  };
+  
+  const fromDefaults: Record<string, string> = {
+    "禄": `${from}化禄入${to}，主缘分、利益、资源流向${to}。`,
+    "权": `${from}化权入${to}，主掌控、权威、执行力在${to}体现。`,
+    "科": `${from}化科入${to}，主名声、才华、贵人缘在${to}显现。`,
+    "忌": `${from}化忌入${to}，主执着、阻碍、业力集中于${to}。`,
+  };
+  
+  const fromTable = pairs[from];
+  if (fromTable && fromTable[mutagen]) return fromTable[mutagen];
+  return fromDefaults[mutagen] || `${from}化${mutagen}入${to}`;
+}
+
 // ─── Types ───
 
 type AstrolabeData = ReturnType<typeof astro.bySolar>;
@@ -475,6 +537,48 @@ export function ZiweiApp() {
                           ));
                         } catch { return <p>无法获取三方四正数据</p>; }
                       })()}
+
+                      {/* 宫干四化飞星 */}
+                      <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(51,51,51,0.08)" }}>
+                        <h3 style={{ marginBottom: 12 }}>宫干四化飞星</h3>
+                        <p className="ziwei-hint">此宫天干飞出四化所落的宫位与含义</p>
+                        {(() => {
+                          const stem = selectedPalace.heavenlyStem as string;
+                          const starNames = MUTAGEN_MAP[stem];
+                          if (!starNames) return <p>无法获取四化数据</p>;
+                          const fromName = selectedPalace.name;
+                          return MUTAGEN_LABELS.map((label, i) => {
+                            const starName = starNames[i];
+                            const target = findTargetPalace(starName, astroData.palaces);
+                            const desc = getFlyDesc(label, fromName, target?.name || "—");
+                            return (
+                              <div key={label} style={{
+                                padding: "10px 14px",
+                                marginBottom: 8,
+                                borderRadius: 10,
+                                background: "rgba(51,51,51,0.03)",
+                                border: "1px solid rgba(51,51,51,0.06)",
+                              }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                  <span style={{
+                                    display: "inline-block",
+                                    width: 24, height: 24,
+                                    borderRadius: 12,
+                                    background: label === "禄" ? "#298747" : label === "权" ? "#D44115" : label === "科" ? "#317994" : "#333",
+                                    color: "#fff",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    textAlign: "center",
+                                    lineHeight: "24px",
+                                  }}>{label}</span>
+                                  <span style={{ fontSize: 14, fontWeight: 600 }}>{fromName}→{starName}→{target ? target.name : "—"}</span>
+                                </div>
+                                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>{desc}</div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
                     </div>
                   )}
 
@@ -511,6 +615,48 @@ export function ZiweiApp() {
                           });
                         } catch { return <p>无法获取四化数据</p>; }
                       })()}
+
+                      {/* 宫干四化飞星 */}
+                      <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(51,51,51,0.08)" }}>
+                        <h3 style={{ marginBottom: 12 }}>宫干四化飞星</h3>
+                        <p className="ziwei-hint">此宫天干飞出四化所落的宫位与含义</p>
+                        {(() => {
+                          const stem = selectedPalace.heavenlyStem as string;
+                          const starNames = MUTAGEN_MAP[stem];
+                          if (!starNames) return <p>无法获取四化数据</p>;
+                          const fromName = selectedPalace.name;
+                          return MUTAGEN_LABELS.map((label, i) => {
+                            const starName = starNames[i];
+                            const target = findTargetPalace(starName, astroData.palaces);
+                            const desc = getFlyDesc(label, fromName, target?.name || "—");
+                            return (
+                              <div key={label} style={{
+                                padding: "10px 14px",
+                                marginBottom: 8,
+                                borderRadius: 10,
+                                background: "rgba(51,51,51,0.03)",
+                                border: "1px solid rgba(51,51,51,0.06)",
+                              }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                  <span style={{
+                                    display: "inline-block",
+                                    width: 24, height: 24,
+                                    borderRadius: 12,
+                                    background: label === "禄" ? "#298747" : label === "权" ? "#D44115" : label === "科" ? "#317994" : "#333",
+                                    color: "#fff",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    textAlign: "center",
+                                    lineHeight: "24px",
+                                  }}>{label}</span>
+                                  <span style={{ fontSize: 14, fontWeight: 600 }}>{fromName}→{starName}→{target ? target.name : "—"}</span>
+                                </div>
+                                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>{desc}</div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
                     </div>
                   )}
                 </div>
