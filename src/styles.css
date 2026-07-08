@@ -2569,3 +2569,149 @@ input:focus {
     display: none;
   }
 }
+
+/* ===== 统一新模块卡片样式（对齐紫微） ===== */
+
+/* 结果卡片通用 */
+.bazi-result-card, .bazi-pillars-grid > div, .bazi-ai-result,
+.qimen-grid > div, .qimen-ai-result, .qimen-info-bar,
+.meihua-result-card, .meihua-ai-result {
+  background: var(--surface);
+  border: 1px solid rgba(51,51,51,0.08);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* 标题行 */
+.bazi-card-title, .bazi-header .bazi-title,
+.qimen-hero h1, .meihua-hero h1 {
+  color: var(--gold);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* 副标题 */
+.bazi-subtitle, .qimen-hero p, .meihua-hero p {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+/* 信息标签 */
+.bazi-label, .qimen-info-label, .meihua-label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+/* AI 解读区域 */
+.bazi-ai-section, .qimen-ai-section, .meihua-ai-section {
+  margin-top: 24px;
+}
+
+.bazi-ai-btn, .qimen-ai-btn, .meihua-ai-btn {
+  border: 0; border-radius: 9px;
+  background: var(--gold); color: #fff;
+  padding: 10px 24px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.bazi-ai-btn:hover, .qimen-ai-btn:hover, .meihua-ai-btn:hover {
+  background: var(--gold-dark);
+}
+.bazi-ai-btn:disabled, .qimen-ai-btn:disabled, .meihua-ai-btn:disabled {
+  opacity: 0.45; cursor: not-allowed;
+}
+
+.bazi-ai-result, .qimen-ai-result, .meihua-ai-result {
+  margin-top: 16px;
+}
+.bazi-ai-result-header, .qimen-ai-result-header, .meihua-ai-result-header {
+  color: var(--gold); font-size: 16px; font-weight: 700; margin: 0 0 10px;
+}
+.bazi-ai-result-body, .qimen-ai-result-body, .meihua-ai-result-body {
+  color: var(--ink); font-size: 14px; line-height: 1.8; white-space: pre-wrap;
+}
+
+/* Hero section */
+.bazi-header, .qimen-hero, .meihua-hero {
+  text-align: center; padding: 16px 0 8px;
+}
+
+/* Info bar */
+.qimen-info-bar, .meihua-info-bar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px;
+  margin-bottom: 14px; font-size: 12px;
+}
+.qimen-info-item, .meihua-info-item {
+  color: var(--ink);
+}
+.qimen-info-label, .meihua-info-label {
+  color: var(--ink-soft); margin-right: 4px;
+}
+
+/* Flag tags */
+.qimen-flag {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  font-size: 11px; margin: 1px 2px;
+}
+.qimen-formation-tag {
+  display: inline-block; padding: 1px 8px; border-radius: 4px;
+  background: var(--gold-soft); color: var(--gold-dark);
+  font-size: 11px; margin: 1px 3px 1px 0;
+}
+
+/* Daliuren tab system */
+.daliuren-tab-bar {
+  display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.daliuren-tab {
+  border: 1px solid rgba(51,51,51,0.12); border-radius: 8px;
+  background: var(--surface); color: var(--ink-soft);
+  padding: 6px 14px; font-size: 13px; cursor: pointer;
+  transition: all 0.15s;
+}
+.daliuren-tab:hover { border-color: var(--gold); }
+.daliuren-tab.active { background: var(--ink); color: var(--surface-strong); border-color: var(--ink); }
+
+/* Overview items */
+.bazi-overview, .meihua-overview {
+  display: flex; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 14px;
+}
+.bazi-overview-item, .meihua-overview-item {
+  display: flex; align-items: center; gap: 6px;
+}
+.bazi-overview-item .bazi-value { font-weight: 600; }
+
+/* Pillar cards */
+.bazi-pillars-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+  margin: 14px 0;
+}
+.bazi-pillar-header {
+  color: var(--ink); font-weight: 700; font-size: 15px; margin-bottom: 8px;
+}
+.bazi-pillar-body { font-size: 13px; color: var(--ink); }
+
+/* Palace grid - qimen 3x3 */
+.qimen-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin: 16px 0;
+}
+.qimen-palace-body { font-size: 13px; line-height: 1.6; }
+
+/* Daliuren grid */
+.daliuren-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin: 14px 0;
+}
+.daliuren-grid-cell {
+  background: var(--surface-strong); border: 1px solid var(--ink-faint);
+  border-radius: 8px; padding: 8px; font-size: 12px; text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bazi-pillars-grid { grid-template-columns: 1fr; }
+  .qimen-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .daliuren-grid { grid-template-columns: repeat(2, 1fr); }
+}

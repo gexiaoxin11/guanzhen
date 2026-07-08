@@ -172,10 +172,7 @@ export default function DaliurenPage() {
             )}
 
             {/* 标签页切换 */}
-            <div style={{
-              display: "flex", gap: 0, borderBottom: "1px solid var(--ink-faint)",
-              marginBottom: 16, marginTop: 20,
-            }}>
+            <div className="daliuren-tab-bar" style={{ marginTop: 20 }}>
               {([
                 ["tianDiPan", "天地盘"],
                 ["siKe", "四课"],
@@ -184,13 +181,7 @@ export default function DaliurenPage() {
                 ["keTi", "课体"],
                 ["dunGan", "遁干"],
               ] as const).map(([key, label]) => (
-                <button key={key} onClick={() => setActiveTab(key)} style={{
-                  padding: "10px 20px", border: "none",
-                  borderBottom: activeTab === key ? "2px solid var(--gold)" : "2px solid transparent",
-                  background: "transparent", color: activeTab === key ? "var(--ink)" : "var(--ink-soft)",
-                  fontSize: 14, fontWeight: activeTab === key ? 600 : 400,
-                  cursor: "pointer", transition: "all 0.2s",
-                }}>
+                <button key={key} onClick={() => setActiveTab(key)} className={`daliuren-tab${activeTab === key ? " active" : ""}`}>
                   {label}
                 </button>
               ))}
