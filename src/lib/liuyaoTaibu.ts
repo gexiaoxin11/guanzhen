@@ -1,31 +1,23 @@
 import { calculateLiuyao, performFullAnalysis, type LiuyaoInput, type LiuyaoOutput } from "taibu-core/liuyao";
 
-/**
- * Bridge our LiuyaoChart to taibu-core's LiuyaoInput for enhanced analysis.
- */
-export function taibuAnalyzeLiuyao(
+export async function taibuAnalyzeLiuyao(
   hexagramName: string,
   changedHexagramName: string | undefined,
   question: string,
   date: string,
-): ReturnType<typeof performFullAnalysis> {
+) {
   const input: LiuyaoInput = {
     question: question || "占事",
-    yongShenTargets: [],
+    yongShenTargets: ["妻财", "官鬼", "父母", "兄弟", "子孙"],
     method: "select",
     hexagramName,
     changedHexagramName,
     date,
     detailLevel: "full",
   };
-  try {
-    return performFullAnalysis(input);
-  } catch {
-    // Fallback to basic calculation
-    return calculateLiuyao(input) as ReturnType<typeof performFullAnalysis>;
-  }
+  return performFullAnalysis(input);
 }
 
-export function taibuBasicLiuyao(input: LiuyaoInput): LiuyaoOutput {
+export async function taibuBasicLiuyao(input: LiuyaoInput): Promise<LiuyaoOutput> {
   return calculateLiuyao(input);
 }

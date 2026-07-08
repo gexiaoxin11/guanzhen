@@ -19,7 +19,7 @@ export default function QimenPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const [y, m, d] = birthDate.split("-").map(Number);
     const h = HOUR_STARTS[timeIndex] || 0;
@@ -34,7 +34,7 @@ export default function QimenPage() {
       panType,
       juMethod,
     };
-    const output = runQimen(input);
+    const output = await runQimen(input);
     setResult(output);
     setAiResult(null);
   }

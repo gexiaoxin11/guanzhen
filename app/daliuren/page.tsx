@@ -24,16 +24,15 @@ export default function DaliurenPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"tianDiPan" | "siKe" | "sanChuan" | "shenSha" | "keTi" | "dunGan">("tianDiPan");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setAiResult("");
     setLoading(true);
     try {
       const h = HOUR_STARTS[timeIndex] || 0;
-      const date = `${birthDate}T${String(h).padStart(2, "0")}:00`;
-      const input: DaliurenInput = { date, hour: h, minute: 0, timezone, question: question || undefined };
-      const output = runDaliuren(input);
+      const input: DaliurenInput = { date: birthDate, hour: h, minute: 0, timezone, question: question || undefined };
+      const output = await runDaliuren(input);
       setResult(output);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "排盘失败，请检查输入");

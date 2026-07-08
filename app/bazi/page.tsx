@@ -52,7 +52,7 @@ export default function BaziPage() {
   const [aiResult, setAiResult] = useState("");
   const [aiError, setAiError] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
     setAiResult("");
     setAiError("");
@@ -72,8 +72,8 @@ export default function BaziPage() {
         isLeapMonth: calendarType === "lunar" ? isLeapMonth : undefined,
       };
 
-      const result = runBazi(input);
-      const shenSha = runBaziShenSha(input);
+      const result = await runBazi(input);
+      const shenSha = await runBaziShenSha(input);
       setBaziResult(result);
       setShenShaResult(shenSha);
       setLoading(false);

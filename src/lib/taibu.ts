@@ -12,11 +12,11 @@ import { calculateMeihua, type MeihuaInput, type MeihuaOutput } from "taibu-core
 
 export type { LiuyaoInput, LiuyaoOutput, ZiweiInput, ZiweiOutput, BaziInput, BaziOutput, BaziShenShaOutput, QimenInput, QimenOutput, DaliurenInput, DaliurenOutput, MeihuaInput, MeihuaOutput, ZiweiFlyingStarInput, ZiweiFlyingStarOutput };
 
-export function runLiuyao(input: LiuyaoInput): ReturnType<typeof performFullAnalysis> {
+export async function runLiuyao(input: LiuyaoInput) {
   return performFullAnalysis(input);
 }
 
-export function runLiuyaoBasic(input: LiuyaoInput): LiuyaoOutput {
+export async function runLiuyaoBasic(input: LiuyaoInput): Promise<LiuyaoOutput> {
   return calculateLiuyao(input);
 }
 
@@ -28,22 +28,22 @@ export function runZiweiFlyingStar(input: ZiweiFlyingStarInput): ZiweiFlyingStar
   return calculateZiweiFlyingStar(input);
 }
 
-export function runBazi(input: BaziInput): BaziOutput {
+export async function runBazi(input: BaziInput): Promise<BaziOutput> {
   return calculateBazi(input);
 }
 
-export function runBaziShenSha(input: BaziInput): BaziShenShaOutput {
+export async function runBaziShenSha(input: BaziInput): Promise<BaziShenShaOutput> {
   return calculateBaziShenShaData(input);
 }
 
-export function runQimen(input: QimenInput): QimenOutput {
+export async function runQimen(input: QimenInput): Promise<QimenOutput> {
   return calculateQimen(input);
 }
 
-export function runDaliuren(input: DaliurenInput): DaliurenOutput {
+export async function runDaliuren(input: DaliurenInput): Promise<DaliurenOutput> {
   return calculateDaliuren(input);
 }
 
-export function runMeihua(input: MeihuaInput): MeihuaOutput {
+export async function runMeihua(input: MeihuaInput): Promise<MeihuaOutput> {
   return calculateMeihua(input);
 }

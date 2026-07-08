@@ -41,14 +41,14 @@ export default function MeihuaPage() {
     return base;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setAiText("");
     setAiError("");
     try {
       const input = buildInput();
-      const output = runMeihua(input);
+      const output = await runMeihua(input);
       setResult(output);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "起卦失败";
