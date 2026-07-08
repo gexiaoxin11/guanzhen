@@ -9,6 +9,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { calculateLiuyao } from "../domain/liuyaoEngine";
 import { buildLocalReading, describeLineStrength, inferScenario, scenarioRules } from "../domain/readingRules";
 import type { LiuyaoChart, LiuyaoInput, Topic, YaoLine, YaoValue } from "../domain/types";
@@ -134,7 +135,9 @@ function loadFullRecord(id: string): { chart: LiuyaoChart; reading: string } | n
 }
 
 export function App() {
+  const router = useRouter();
   const [input, setInput] = useState<LiuyaoInput>(() => createDefaultInput());
+
   const [mode, setMode] = useState<CastMode>("auto");
   const [persona] = useState<Persona>("hermit");
   const [depth] = useState<Depth>("standard");
@@ -279,9 +282,21 @@ export function App() {
     }, 620);
   }
 
+  function checkAuth(module: string): boolean {
+    try {
+      const raw = localStorage.getItem("auth_info");
+      if (!raw) return false;
+      const info = JSON.parse(raw);
+      if (new Date(info.expire_time) <= new Date()) { localStorage.removeItem("auth_info"); return false; }
+      if (!info.modules || !info.modules.includes(module)) return false;
+      return true;
+    } catch { return false; }
+  }
+
   async function submitReading(event: React.FormEvent) {
     event.preventDefault();
     if (!canCalculate || !chart) return;
+    if (!checkAuth("liuyao")) { router.replace("/activate"); return; }
     setSubmitted(true);
     setLoadingReading(true);
     setReading("");
@@ -525,7 +540,7 @@ export function App() {
 }
 
 function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | null; supabaseReady: boolean; onOpenAuth: () => void }) {
-  const nav = ["六爻", "紫微"];
+  const nav = ["首页", "六爻", "紫微"];
   return (
     <header className="topbar">
       <a className="brand" href="/">
@@ -536,12 +551,12 @@ function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | 
         {nav.map((item) => (
           <a
             className={item === "六爻" ? "active" : ""}
-            href={item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : "#"}
+            href={item === "首页" ? "/" : item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : "#"}
             key={item}
           >{item}</a>
         ))}
       </nav>
-      <button className="profile-pill" type="button" onClick={onOpenAuth}>个人中心</button>
+      <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
     </header>
   );
 }

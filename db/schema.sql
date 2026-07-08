@@ -184,3 +184,20 @@ as $$
   limit match_count;
 $$;
 );
+
+-- ========== 激活密钥表 ==========
+CREATE TABLE IF NOT EXISTS activation_keys (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key_str VARCHAR(64) NOT NULL UNIQUE,
+  modules VARCHAR(128) NOT NULL DEFAULT 'liuyao,ziwei',
+  type TINYINT NOT NULL DEFAULT 1, -- 1=时长版, 2=次数版
+  expire_days INT NOT NULL DEFAULT 365,
+  remain_times INT NOT NULL DEFAULT -1, -- -1=不限次
+  first_activate_time DATETIME DEFAULT NULL,
+  status TINYINT NOT NULL DEFAULT 1, -- 1=启用, 0=禁用
+  create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 插入测试密钥（时长版，365天，不限次）
+INSERT OR IGNORE INTO activation_keys (key_str, modules, type, expire_days, remain_times, status)
+VALUES ('GuanZhen2026-Demo-Key-001', 'liuyao,ziwei', 1, 365, -1, 1);

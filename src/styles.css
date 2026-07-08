@@ -29,6 +29,7 @@ html {
 }
 
 body {
+  overflow-y: scroll;
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
@@ -426,6 +427,7 @@ a {
 }
 
 .guide-body {
+  overflow-y: scroll;
   display: grid;
   gap: 10px;
   border-top: 1px solid rgba(51, 51, 51, 0.08);
@@ -1297,6 +1299,7 @@ input:focus {
 }
 
 .reading-section-body {
+  overflow-y: scroll;
   padding: 0 18px 16px;
 }
 
@@ -1747,7 +1750,8 @@ input:focus {
 .ziwei-palace.is-selected { background: rgba(201,154,54,0.14); box-shadow: inset 0 0 0 2px var(--gold); }
 .ziwei-palace.is-active { box-shadow: inset 0 0 0 2px var(--red); }
 .ziwei-palace.is-soul { border-left: 3px solid var(--gold); }
-.ziwei-palace.is-body { border-right: 3px solid var(--gold); }
+.ziwei-palace.is-body {
+  overflow-y: scroll; border-right: 3px solid var(--gold); }
 
 .ziwei-palace-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
 .ziwei-palace-name { color: var(--ink); font-size: 13px; font-weight: 600; }
@@ -2540,6 +2544,7 @@ input:focus {
 }
 
 .ziwei-ai-result-body {
+  overflow-y: scroll;
   padding: 18px 20px;
   font-size: 14px;
   color: var(--ink);

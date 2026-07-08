@@ -1,0 +1,14 @@
+[
+  {
+    "key_str": "GuanZhen2026-Demo-Key-001",
+    "modules": [
+      "liuyao",
+      "ziwei"
+    ],
+    "type": 1,
+    "expire_days": 365,
+    "remain_times": -1,
+    "status": 1,
+    "first_activate_time": "2026-07-08T08:53:50.585Z"
+  }
+]

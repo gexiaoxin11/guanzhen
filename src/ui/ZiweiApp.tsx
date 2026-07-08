@@ -2,6 +2,7 @@
 
 import { astro } from "iztro";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { generateZiweiAnalysis } from "../domain/ziweiAnalysis";
 import "../styles.css";
 
@@ -83,7 +84,9 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 // ─── Component ───
 
 export function ZiweiApp() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+
   const [birthDate, setBirthDate] = useState("1990-01-01");
   const [timeIndex, setTimeIndex] = useState(0);
   const [gender, setGender] = useState("男");
@@ -104,8 +107,36 @@ export function ZiweiApp() {
     return generateZiweiAnalysis(astroData);
   }, [astroData]);
 
+  function saveLocalHistory() {
+    try {
+      const raw = localStorage.getItem("mirror-ziwei-archives") || "[]";
+      const list = JSON.parse(raw);
+      const item = {
+        id: "zw-" + Date.now(),
+        type: "ziwei",
+        question: birthDate + " " + ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"][timeIndex] + "时 " + gender + "命",
+        createdAt: new Date().toISOString(),
+      };
+      list.unshift(item);
+      if (list.length > 20) list.pop();
+      localStorage.setItem("mirror-ziwei-archives", JSON.stringify(list));
+    } catch { /* quota exceeded */ }
+  }
+
+  function checkAuth(module: string): boolean {
+    try {
+      const raw = localStorage.getItem("auth_info");
+      if (!raw) return false;
+      const info = JSON.parse(raw);
+      if (new Date(info.expire_time) <= new Date()) { localStorage.removeItem("auth_info"); return false; }
+      if (!info.modules || !info.modules.includes(module)) return false;
+      return true;
+    } catch { return false; }
+  }
+
   const handleAIAnalysis = async () => {
     if (!astroData) return;
+    if (!checkAuth("ziwei")) { router.replace("/activate"); return; }
     setAiLoading(true);
     setAiReading("");
     try {
@@ -120,6 +151,7 @@ export function ZiweiApp() {
       clearTimeout(to);
       const data = await resp.json();
       setAiReading(data.text || "分析失败，请重试");
+      saveLocalHistory();
     } catch {
       setAiReading("网络错误，请重试");
     } finally {
@@ -202,8 +234,8 @@ export function ZiweiApp() {
   if (!mounted) {
     return <div className="app-shell"><header className="topbar">
       <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
-      <nav className="desktop-nav"><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
-      <span className="profile-pill">个人中心</span>
+      <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
+      <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
     </header><main className="main-flow" /></div>;
   }
 
@@ -211,8 +243,8 @@ export function ZiweiApp() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
-        <nav className="desktop-nav"><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
-        <span className="profile-pill">个人中心</span>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
+        <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
       <main className="main-flow">
         {/* Hero + Form */}

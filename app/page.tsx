@@ -14,11 +14,11 @@ export default function HomePage() {
           <span>观真</span>
           <small>Truthful Hexagram</small>
         </a>
-        <nav className="desktop-nav">
+        <nav className="desktop-nav"><a className="active" href="/">首页</a>
           <a href="/liuyao">六爻</a>
           <a href="/ziwei">紫微</a>
         </nav>
-        <span className="profile-pill">个人中心</span>
+        <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
 
       <main className="main-flow">
