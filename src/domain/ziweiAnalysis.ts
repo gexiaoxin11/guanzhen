@@ -365,6 +365,23 @@ function analyzeDecadals(palaces: PalaceData[]): Array<{
 }> {
   const results: Array<{ palace: string; ageRange: string; stars: string; note: string }> = [];
 
+  const starAnalysis: Record<string, string> = {
+    "紫微": "帝星坐守，权柄在握，宜主动出击，建立事业根基",
+    "天机": "谋略运筹，脑力见长，宜学习规划、策略布局",
+    "太阳": "光明磊落，外向发展，宜公益、教育、展现自我",
+    "武曲": "刚毅果断，执行力强，宜金融实业、踏实进取",
+    "天同": "福泽深厚，圆融处世，宜享受生活、稳中求和",
+    "廉贞": "魄力担当，带桃花色，宜监察、创意、司法",
+    "天府": "稳重包容，库藏丰盈，宜管理、房产、守成",
+    "太阴": "细腻柔和，善于储蓄，宜文职、理财、服务",
+    "贪狼": "多才多艺，交际灵活，宜演艺外交，忌贪得无厌",
+    "巨门": "深思善辩，宜法律咨询、学术研究，需防口舌",
+    "天相": "辅佐之才，公正温和，宜行政秘书、协调工作",
+    "天梁": "长者风范，喜助人，宜慈善医疗、教育传道",
+    "七杀": "将星气度，奋勇开拓，宜军警创业，忌冲动冒进",
+    "破军": "敢破敢立，变革创新，宜开创事业，忌反复无常",
+  };
+
   for (const palace of palaces) {
     const allStars = [...palace.majorStars, ...palace.minorStars];
     const starNames = allStars.map((s) => s.name).join("、") || "空";
@@ -372,14 +389,40 @@ function analyzeDecadals(palaces: PalaceData[]): Array<{
     let note = "";
 
     const majorNames = palace.majorStars.map((s) => s.name);
+    const minorNames = palace.minorStars.map((s) => s.name);
+    const hasMutagen = allStars.some((s) => s.mutagen);
+    const mutagenInfo = allStars.filter((s) => s.mutagen).map((s) => `${s.name}化${s.mutagen}`).join("、");
+
     if (majorNames.length === 0) {
       note = "此限借力对宫，后天修为决定吉凶。";
-    } else if (majorNames.some((n) => ["紫微", "天府", "天相"].includes(n))) {
-      note = "此限得吉星加持，运势顺遂，宜把握良机。";
-    } else if (majorNames.some((n) => ["七杀", "破军", "贪狼"].includes(n))) {
-      note = "此限变动较大，宜顺势而动，不宜守旧。";
     } else {
-      note = "此限平稳过渡，宜稳扎稳打。";
+      // Build note from specific star analysis
+      const parts: string[] = [];
+      for (const name of majorNames) {
+        if (starAnalysis[name]) parts.push(starAnalysis[name]);
+      }
+      if (parts.length > 0) {
+        note = parts.slice(0, 2).join("；");
+      } else if (majorNames.some((n) => ["紫微", "天府", "天相"].includes(n))) {
+        note = "此限得吉星加持，运势顺遂，宜把握良机。";
+      } else if (majorNames.some((n) => ["七杀", "破军", "贪狼"].includes(n))) {
+        note = "此限变动较大，宜顺势而动，不宜守旧。";
+      } else {
+        note = "此限平稳过渡，宜稳扎稳打。";
+      }
+
+      if (hasMutagen) {
+        note += ` 四化加持：${mutagenInfo}。`;
+      }
+      if (minorNames.includes("左辅") || minorNames.includes("右弼")) {
+        note += " 得辅弼相助，贵人运佳。";
+      }
+      if (minorNames.includes("文昌") || minorNames.includes("文曲")) {
+        note += " 文星加持，学业考运佳。";
+      }
+      if (minorNames.includes("火星") || minorNames.includes("铃星")) {
+        note += " 火铃激发，行动力爆发，需防急躁。";
+      }
     }
 
     results.push({
