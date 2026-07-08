@@ -75,10 +75,10 @@ export default function QimenPage() {
       </header>
 
       <main className="main-flow">
-        <div className="qimen-hero">
-          <h1 className="qimen-title">奇门遁甲</h1>
-          <p className="qimen-subtitle">九天玄女所授，轩辕黄帝伐蚩尤，命风后演绎成文。古称帝王之学，运筹帷幄，决胜千里。</p>
-        </div>
+        <section className="ziwei-hero">
+          <h1>奇门遁甲</h1>
+          <p>九宫八卦 · 八门九星 · 天盘地盘 · 帝王之术</p>
+        </section>
 
         <form className="ziwei-form" onSubmit={handleSubmit}>
           <div className="ziwei-form-row">

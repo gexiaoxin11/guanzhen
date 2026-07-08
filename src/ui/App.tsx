@@ -428,6 +428,10 @@ export function App() {
           />
         )}
 
+        <section className="ziwei-hero">
+          <h1>六爻占卜</h1>
+          <p>铜钱起卦 · 六爻装卦 · 用神伏神 · 应期推测</p>
+        </section>
         <form className={submitted ? "casting-form compact" : "casting-form"} onSubmit={submitReading}>
           <section className="form-card question-card">
             <div className="question-head">

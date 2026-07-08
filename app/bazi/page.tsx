@@ -124,10 +124,10 @@ export default function BaziPage() {
       </header>
 
       <main className="main-flow">
-        <div className="bazi-header">
-          <h1 className="bazi-title">八字排盘</h1>
-          <p className="bazi-subtitle">四柱推命 · 干支推演</p>
-        </div>
+        <section className="ziwei-hero">
+          <h1>八字排盘</h1>
+          <p>四柱推命 · 十神 · 藏干 · 纳音 · 神煞</p>
+        </section>
 
         <form className="ziwei-form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleSubmit(); }}>
           <div className="ziwei-form-row">

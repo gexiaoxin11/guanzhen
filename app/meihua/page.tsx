@@ -103,7 +103,10 @@ export default function MeihuaPage() {
       </header>
 
       <div className="main-flow">
-        {/* 表单 */}
+        <section className="ziwei-hero">
+          <h1>梅花易数</h1>
+          <p>象数理占 · 体用生克 · 八卦类象 · 观物取象</p>
+        </section>
         <form onSubmit={handleSubmit} style={{
           background: "var(--surface)",
           border: "1px solid rgba(51,51,51,0.08)",

@@ -71,16 +71,9 @@ export default function DaliurenPage() {
 
       <main className="main-flow">
         {/* ── 标题区 ── */}
-        <section style={{ textAlign: "center", padding: "20px 0 6px" }}>
-          <h1 style={{
-            margin: 0, fontSize: 38, fontWeight: 800, letterSpacing: "0.08em",
-            color: "var(--gold)", textShadow: "0 2px 16px rgba(212,65,21,0.25)",
-          }}>
-            大六壬
-          </h1>
-          <p style={{ margin: "6px 0 0", color: "var(--ink-soft)", fontSize: 14 }}>
-            前知五百年 · 后知五百载
-          </p>
+        <section className="ziwei-hero">
+          <h1>大六壬</h1>
+          <p>天地盘 · 四课三传 · 十二天将 · 神机妙算</p>
         </section>
 
         {/* ── 排盘表单 ── */}
