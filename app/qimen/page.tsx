@@ -13,6 +13,12 @@ export default function QimenPage() {
   const [gender, setGender] = useState("男");
   const [timezone, setTimezone] = useState("Asia/Shanghai");
   const [question, setQuestion] = useState("");
+
+  const TOPIC_LABELS: Record<string, string> = {
+    general: "综合", career: "事业", wealth: "财运", love: "感情",
+    health: "健康", lost: "失物", study: "学业", lawsuit: "官非",
+  };
+  const [topic, setTopic] = useState<string>("general");
   const [panType, setPanType] = useState<"zhuan">("zhuan");
   const [juMethod, setJuMethod] = useState<"chaibu" | "maoshan">("chaibu");
   const [result, setResult] = useState<QimenOutput | null>(null);
@@ -80,6 +86,20 @@ export default function QimenPage() {
           <p>九宫八卦 · 八门九星 · 天盘地盘 · 帝王之术</p>
         </section>
 
+        <section className="form-card question-card">
+          <div className="question-head">
+            <label className="field-label" htmlFor="qimen-question">求测问题</label>
+            <div className="topic-row">
+              {Object.entries(TOPIC_LABELS).map(([value, label]) => (
+                <button type="button" className={topic === value ? "topic selected" : "topic"} key={value} onClick={() => setTopic(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <textarea id="qimen-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="心中所疑，尽可在此诉说..." rows={2} />
+        </section>
+
         <form className="ziwei-form" onSubmit={handleSubmit}>
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
@@ -89,11 +109,6 @@ export default function QimenPage() {
             <label><span>排盘方式</span><select value={panType} onChange={(e) => setPanType(e.target.value as "zhuan")}><option value="zhuan">转盘</option></select></label>
             <label><span>局法</span><select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}><option value="chaibu">拆补</option><option value="maoshan">茅山</option></select></label>
             <button type="submit" className="ziwei-submit">开始排盘</button>
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <label className="field-label">所问何事</label>
-            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="可选..." rows={2}
-              style={{ width: "100%", border: "1px solid var(--ink-faint)", borderRadius: 10, padding: "10px 12px", fontSize: 14, background: "var(--surface-strong)", color: "var(--ink)", resize: "vertical", marginTop: 4 }} />
           </div>
         </form>
 

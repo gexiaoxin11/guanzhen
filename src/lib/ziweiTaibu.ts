@@ -1,4 +1,4 @@
-import { calculateZiwei, calculateZiweiFlyingStar, type ZiweiInput, type ZiweiOutput, type ZiweiFlyingStarInput, type ZiweiFlyingStarOutput } from "taibu-core/ziwei";
+import { calculateZiwei, type ZiweiInput, type ZiweiOutput } from "taibu-core/ziwei";
 
 export function taibuCalculateZiwei(birthYear: number, birthMonth: number, birthDay: number, birthHour: number, gender: "男" | "女"): ZiweiOutput {
   const input: ZiweiInput = {
@@ -16,14 +16,15 @@ export function taibuCalculateFlyingStar(
   birthYear: number, birthMonth: number, birthDay: number, birthHour: number,
   gender: "男" | "女",
   targetYear: number,
-): ZiweiFlyingStarOutput {
-  const input: ZiweiFlyingStarInput = {
+): any {
+  throw new Error("飞星排盘功能暂不可用");
+  /* const input: any = {
     birthYear, birthMonth, birthDay, birthHour,
     calendarType: "solar",
     gender: gender === "男" ? "male" : "female",
     targetYear,
   };
-  return calculateZiweiFlyingStar(input);
+  */
 }
 
-export type { ZiweiOutput, ZiweiFlyingStarOutput };
+export type { ZiweiOutput };

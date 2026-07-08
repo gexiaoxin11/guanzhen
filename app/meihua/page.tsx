@@ -21,6 +21,12 @@ export default function MeihuaPage() {
   const [aiText, setAiText] = useState("");
   const [aiError, setAiError] = useState("");
 
+  const TOPIC_LABELS: Record<string, string> = {
+    general: "综合", career: "事业", wealth: "财运", love: "感情",
+    health: "健康", lost: "失物", study: "学业", lawsuit: "官非",
+  };
+  const [topic, setTopic] = useState<string>("general");
+
   const hexagramNames = [
     "乾为天", "坤为地", "水雷屯", "山水蒙", "水天需", "天水讼", "地水师", "水地比",
     "风天小畜", "天泽履", "地天泰", "天地否", "天火同人", "火天大有", "地山谦", "雷地豫",
@@ -107,147 +113,48 @@ export default function MeihuaPage() {
           <h1>梅花易数</h1>
           <p>象数理占 · 体用生克 · 八卦类象 · 观物取象</p>
         </section>
-        <form onSubmit={handleSubmit} style={{
-          background: "var(--surface)",
-          border: "1px solid rgba(51,51,51,0.08)",
-          borderRadius: 16,
-          padding: "28px 24px",
-          marginBottom: 28,
-          boxShadow: "var(--shadow)",
-        }}>
-          <h2 style={{ margin: "0 0 20px", fontSize: 22, fontWeight: 700, letterSpacing: "0.04em", color: "var(--gold)" }}>梅花易数</h2>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>所问何事</label>
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="心中所疑，尽可在此诉说…"
-              rows={3}
-              style={{
-                width: "100%",
-                border: "1px solid rgba(51,51,51,0.14)",
-                borderRadius: 10,
-                padding: "10px 14px",
-                fontSize: 15,
-                background: "var(--surface-strong)",
-                color: "var(--ink)",
-                resize: "vertical",
-                outline: "none",
-                fontFamily: "inherit",
-              }}
-            />
+        <section className="form-card question-card">
+          <div className="question-head">
+            <label className="field-label" htmlFor="meihua-question">求测问题</label>
+            <div className="topic-row">
+              {Object.entries(TOPIC_LABELS).map(([value, label]) => (
+                <button type="button" className={topic === value ? "topic selected" : "topic"} key={value} onClick={() => setTopic(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
+          <textarea id="meihua-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="心中所疑，尽可在此诉说…" rows={2} />
+        </section>
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>日期</label>
-            <input
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              style={{
-                width: "100%",
-                border: "1px solid rgba(51,51,51,0.14)",
-                borderRadius: 10,
-                padding: "10px 14px",
-                fontSize: 15,
-                background: "var(--surface-strong)",
-                color: "var(--ink)",
-                outline: "none",
-                fontFamily: "inherit",
-              }}
-            />
+        <form className="ziwei-form" onSubmit={handleSubmit}>
+          <div className="ziwei-form-row">
+            <label><span>日期</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
+            <label><span>时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
+            <label><span>起卦方式</span>
+              <select value={method} onChange={(e) => setMethod(e.target.value as MeihuaInput["method"])}>
+                <option value="time">时间起卦</option>
+                <option value="number_pair">数字起卦（两数）</option>
+                <option value="number_triplet">数字起卦（三数）</option>
+                <option value="select">选卦</option>
+              </select>
+            </label>
+            <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "起卦中…" : "开始起卦"}</button>
           </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>起卦方式</label>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value as MeihuaInput["method"])}
-              style={{
-                width: "100%",
-                border: "1px solid rgba(51,51,51,0.14)",
-                borderRadius: 10,
-                padding: "10px 14px",
-                fontSize: 15,
-                background: "var(--surface-strong)",
-                color: "var(--ink)",
-                outline: "none",
-                fontFamily: "inherit",
-                cursor: "pointer",
-              }}
-            >
-              <option value="time">时间起卦</option>
-              <option value="number_pair">数字起卦（两数）</option>
-              <option value="number_triplet">数字起卦（三数）</option>
-              <option value="select">选卦</option>
-            </select>
-          </div>
-
-          {method === "number_pair" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>上卦数</label>
-                <input type="number" min={1} value={num1} onChange={(e) => setNum1(e.target.value)} placeholder="1-999" style={inputStyle} />
-              </div>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>下卦数</label>
-                <input type="number" min={1} value={num2} onChange={(e) => setNum2(e.target.value)} placeholder="1-999" style={inputStyle} />
-              </div>
+          {(method === "number_pair" || method === "number_triplet") && (
+            <div className="ziwei-form-row" style={{ marginTop: 8 }}>
+              <label><span>数字一</span><input type="number" min={1} value={num1} onChange={(e) => setNum1(e.target.value)} placeholder="1-999" /></label>
+              <label><span>数字二</span><input type="number" min={1} value={num2} onChange={(e) => setNum2(e.target.value)} placeholder="1-999" /></label>
+              {method === "number_triplet" && <label><span>数字三</span><input type="number" min={1} value={num3} onChange={(e) => setNum3(e.target.value)} placeholder="1-999" /></label>}
             </div>
           )}
-
-          {method === "number_triplet" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>上卦数</label>
-                <input type="number" min={1} value={num1} onChange={(e) => setNum1(e.target.value)} placeholder="1-999" style={inputStyle} />
-              </div>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>下卦数</label>
-                <input type="number" min={1} value={num2} onChange={(e) => setNum2(e.target.value)} placeholder="1-999" style={inputStyle} />
-              </div>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>动爻数</label>
-                <input type="number" min={1} value={num3} onChange={(e) => setNum3(e.target.value)} placeholder="1-999" style={inputStyle} />
-              </div>
-            </div>
-          )}
-
           {method === "select" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>卦名</label>
-                <select value={hexagramName} onChange={(e) => setHexagramName(e.target.value)} style={inputStyle as React.CSSProperties}>
-                  {hexagramNames.map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: "block", marginBottom: 6, fontSize: 14, color: "var(--ink-soft)" }}>动爻（1-6）</label>
-                <input type="number" min={1} max={6} value={movingLine} onChange={(e) => setMovingLine(e.target.value)} placeholder="1-6" style={inputStyle} />
-              </div>
+            <div className="ziwei-form-row" style={{ marginTop: 8 }}>
+              <label><span>卦名</span><select value={hexagramName} onChange={(e) => setHexagramName(e.target.value)}>{hexagramNames.map(n => <option key={n} value={n}>{n}</option>)}</select></label>
+              <label><span>动爻</span><input type="number" min={1} max={6} value={movingLine} onChange={(e) => setMovingLine(e.target.value)} placeholder="1-6" /></label>
             </div>
           )}
-
-          <button type="submit" disabled={loading} style={{
-            width: "100%",
-            padding: "14px 0",
-            border: "none",
-            borderRadius: 12,
-            background: loading ? "var(--ink-faint)" : "var(--gold)",
-            color: "#fff",
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "all 0.2s",
-          }}>
-            {loading ? "起卦中…" : "起  卦"}
-          </button>
         </form>
-
         {/* 结果 */}
         {result && (
           <div style={{

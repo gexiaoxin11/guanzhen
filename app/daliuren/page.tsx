@@ -17,6 +17,12 @@ export default function DaliurenPage() {
   const [timeIndex, setTimeIndex] = useState(0);
   const [timezone, setTimezone] = useState("Asia/Shanghai");
   const [question, setQuestion] = useState("");
+
+  const TOPIC_LABELS: Record<string, string> = {
+    general: "综合", career: "事业", wealth: "财运", love: "感情",
+    health: "健康", lost: "失物", study: "学业", lawsuit: "官非",
+  };
+  const [topic, setTopic] = useState<string>("general");
   const [result, setResult] = useState<DaliurenOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -77,17 +83,26 @@ export default function DaliurenPage() {
         </section>
 
         {/* ── 排盘表单 ── */}
+        <section className="form-card question-card">
+          <div className="question-head">
+            <label className="field-label" htmlFor="daliuren-question">求测问题</label>
+            <div className="topic-row">
+              {Object.entries(TOPIC_LABELS).map(([value, label]) => (
+                <button type="button" className={topic === value ? "topic selected" : "topic"} key={value} onClick={() => setTopic(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <textarea id="daliuren-question" value={question} onChange={e => setQuestion(e.target.value)} placeholder="心中所疑，尽可在此诉说..." rows={2} />
+        </section>
+
         <form className="ziwei-form" onSubmit={handleSubmit}>
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
             <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
             <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <label className="field-label">占事（可选）</label>
-            <textarea value={question} onChange={e => setQuestion(e.target.value)} placeholder="心中所疑…" rows={2}
-              style={{ width: "100%", border: "1px solid var(--ink-faint)", borderRadius: 10, padding: "10px 12px", fontSize: 14, background: "var(--surface-strong)", color: "var(--ink)", resize: "vertical", marginTop: 4 }} />
           </div>
           {error && <p className="ziwei-error">{error}</p>}
         </form>

@@ -371,7 +371,7 @@ a {
 .archive-dock {
   border: 1px solid rgba(51, 51, 51, 0.1);
   border-radius: 18px;
-  background: var(--surface);
+  background: #F2EDE5;
   box-shadow: var(--shadow);
 }
 
@@ -448,7 +448,7 @@ a {
 .casting-form {
   display: grid;
   gap: 22px;
-  margin-top: 28px;
+  margin-top: 16px;
 }
 
 .casting-form.compact {
@@ -1405,7 +1405,7 @@ input:focus {
 }
 
 .archive-dock {
-  margin-top: 24px;
+  margin-top: 16px;
   padding: 18px;
 }
 
@@ -1668,9 +1668,9 @@ input:focus {
 .ziwei-hero p { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; }
 
 .ziwei-form {
-  margin-bottom: 20px; padding: 16px 18px;
+  margin-top: 20px; margin-bottom: 16px; padding: 16px 18px;
   border: 1px solid rgba(13,42,42,0.08); border-radius: 14px;
-  background: rgba(255,250,240,0.72); box-shadow: var(--shadow);
+  background: #F2EDE5; box-shadow: var(--shadow);
 }
 .ziwei-form-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
 .ziwei-form-row label { display: grid; gap: 4px; flex: 1 1 150px; }
@@ -2076,7 +2076,7 @@ input:focus {
   padding: 20px;
   border: 1px solid rgba(51, 51, 51, 0.08);
   border-radius: 16px;
-  background: var(--surface-strong);
+  background: #F2EDE5;
 }
 
 .ziwei-analysis h3 {
@@ -2162,7 +2162,7 @@ input:focus {
 
 /* ─── 紫微分析面板 ─── */
 .ziwei-analysis-panel {
-  margin-top: 24px;
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -2171,7 +2171,7 @@ input:focus {
 .ziwei-analysis-section {
   border: 1px solid rgba(51, 51, 51, 0.1);
   border-radius: 18px;
-  background: var(--surface);
+  background: #F2EDE5;
   box-shadow: var(--shadow);
   padding: 18px 20px;
 }
@@ -2576,7 +2576,7 @@ input:focus {
 .bazi-result-card, .bazi-pillars-grid > div, .bazi-ai-result,
 .qimen-grid > div, .qimen-ai-result, .qimen-info-bar,
 .meihua-result-card, .meihua-ai-result {
-  background: var(--surface);
+  background: #F2EDE5;
   border: 1px solid rgba(51,51,51,0.08);
   border-radius: 14px;
   padding: 20px;
@@ -2606,7 +2606,7 @@ input:focus {
 
 /* AI 解读区域 */
 .bazi-ai-section, .qimen-ai-section, .meihua-ai-section {
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .bazi-ai-btn, .qimen-ai-btn, .meihua-ai-btn {
@@ -2714,4 +2714,39 @@ input:focus {
   .bazi-pillars-grid { grid-template-columns: 1fr; }
   .qimen-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .daliuren-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== 统一所有模块标题样式（对齐六爻 field-label） ===== */
+.bazi-card-title,
+.qimen-section-title,
+.daliuren-section-title,
+.meihua-section-title {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/* Bazi 标签对齐 */
+.bazi-td-label {
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* 统一问事输入框样式 */
+.qimen-form textarea,
+.daliuren-form textarea,
+.meihua-form textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.7;
+  border: 1px solid rgba(51, 51, 51, 0.16);
+  border-radius: 10px;
+  outline: none;
+  background: rgba(255, 250, 240, 0.92);
+  color: var(--ink);
 }

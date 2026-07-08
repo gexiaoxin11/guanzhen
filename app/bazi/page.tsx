@@ -19,6 +19,7 @@ const FIVE_ELEMENTS: Record<string, string> = {
 const ELEMENT_COLORS: Record<string, string> = { 金: "#D4A017", 木: "#298747", 水: "#317994", 火: "#D44115", 土: "#B8860B" };
 const ELEMENT_ORDER = ["金", "木", "水", "火", "土"];
 
+
 function computeFiveElements(output: BaziOutput): Record<string, number> {
   const stats: Record<string, number> = { 金: 0, 木: 0, 水: 0, 火: 0, 土: 0 };
   const pillars = output.fourPillars;
@@ -37,7 +38,7 @@ function computeFiveElements(output: BaziOutput): Record<string, number> {
 }
 
 export default function BaziPage() {
-  const [birthDate, setBirthDate] = useState("1990-01-01");
+  const [birthDate, setBirthDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [timeIndex, setTimeIndex] = useState(0);
   const [gender, setGender] = useState<Gender>("male");
   const [calendarType, setCalendarType] = useState<CalendarType>("solar");
@@ -52,7 +53,7 @@ export default function BaziPage() {
   const [aiResult, setAiResult] = useState("");
   const [aiError, setAiError] = useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setError("");
     setAiResult("");
     setAiError("");
@@ -60,7 +61,7 @@ export default function BaziPage() {
 
     try {
       const [y, m, d] = birthDate.split("-").map(Number);
-      const h = HOUR_STARTS[timeIndex] || 0;
+      const h = HOUR_STARTS[timeIndex] ?? 12;
       const input: BaziInput = {
         birthYear: y,
         birthMonth: m,
@@ -72,8 +73,8 @@ export default function BaziPage() {
         isLeapMonth: calendarType === "lunar" ? isLeapMonth : undefined,
       };
 
-      const result = await runBazi(input);
-      const shenSha = await runBaziShenSha(input);
+      const result = runBazi(input);
+      const shenSha = runBaziShenSha(input);
       setBaziResult(result);
       setShenShaResult(shenSha);
       setLoading(false);
@@ -135,19 +136,15 @@ export default function BaziPage() {
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
             <label><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value as Gender)}><option value="male">男</option><option value="female">女</option></select></label>
             <label><span>历法</span><select value={calendarType} onChange={(e) => setCalendarType(e.target.value as CalendarType)}><option value="solar">公历</option><option value="lunar">农历</option></select></label>
-            {calendarType === "lunar" && (
-              <label><span>闰月</span><select value={isLeapMonth ? "1" : "0"} onChange={(e) => setIsLeapMonth(e.target.value === "1")}><option value="0">否</option><option value="1">是</option></select></label>
-            )}
+            {calendarType === "lunar" && <label><span>闰月</span><select value={isLeapMonth ? "1" : "0"} onChange={(e) => setIsLeapMonth(e.target.value === "1")}><option value="0">否</option><option value="1">是</option></select></label>}
             <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
           </div>
           {error && <p className="ziwei-error">{error}</p>}
         </form>
 
-        {error && <p className="bazi-error">{error}</p>}
 
         {baziResult && (
           <>
-            {/* 基本信息 */}
             <section className="bazi-result-card">
               <div className="bazi-card-title">盘面总览</div>
               <div className="bazi-overview">
@@ -174,7 +171,6 @@ export default function BaziPage() {
               </div>
             </section>
 
-            {/* 四柱 */}
             <section className="bazi-result-card">
               <div className="bazi-card-title">四柱详情</div>
               <div className="bazi-pillars-grid">
@@ -241,7 +237,6 @@ export default function BaziPage() {
               </div>
             </section>
 
-            {/* 天干五合 */}
             {baziResult.tianGanWuHe.length > 0 && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">天干五合</div>
@@ -256,7 +251,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 天干冲克 */}
             {baziResult.tianGanChongKe.length > 0 && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">天干冲克</div>
@@ -271,7 +265,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 地支半合 */}
             {baziResult.diZhiBanHe.length > 0 && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">地支半合</div>
@@ -286,7 +279,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 地支三会 */}
             {baziResult.diZhiSanHui.length > 0 && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">地支三会</div>
@@ -301,7 +293,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 刑冲合害 */}
             {baziResult.relations.length > 0 && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">刑冲合害</div>
@@ -316,7 +307,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 吉神凶煞 */}
             {shenShaResult && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">神煞总览</div>
@@ -370,7 +360,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* 五行统计 */}
             {fiveElements && (
               <section className="bazi-result-card">
                 <div className="bazi-card-title">五行统计</div>
@@ -395,7 +384,6 @@ export default function BaziPage() {
               </section>
             )}
 
-            {/* AI 解读 */}
             <section className="bazi-ai-section">
               <button className="bazi-ai-btn" onClick={handleAIReading} disabled={aiLoading}>
                 {aiLoading ? "AI 解读中…" : "AI 解读"}
@@ -440,7 +428,7 @@ export default function BaziPage() {
           padding: 24px 28px;
           border: 1px solid rgba(51, 51, 51, 0.08);
           border-radius: 14px;
-          background: var(--surface);
+          background: #F2EDE5;
           box-shadow: var(--shadow);
         }
         .bazi-form-grid {
@@ -461,7 +449,7 @@ export default function BaziPage() {
           padding: 0 12px;
           border: 1px solid rgba(51, 51, 51, 0.14);
           border-radius: 10px;
-          background: var(--surface-strong);
+          background: #F2EDE5;
           color: var(--ink);
           font-size: 15px;
           outline: none;
@@ -473,12 +461,12 @@ export default function BaziPage() {
           box-shadow: 0 0 0 3px var(--gold-soft);
         }
         .bazi-submit-btn {
-          margin-top: 20px;
+          margin-top: 16px;
           width: 100%;
           padding: 14px;
           border: none;
           border-radius: 12px;
-          background: var(--gold), var(--gold-dark));
+          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 17px;
           font-weight: 600;
@@ -496,7 +484,7 @@ export default function BaziPage() {
           cursor: not-allowed;
         }
         .bazi-error {
-          margin-top: 14px;
+          margin-top: 16px;
           padding: 12px 16px;
           border-radius: 10px;
           background: rgba(212, 65, 21, 0.08);
@@ -505,11 +493,11 @@ export default function BaziPage() {
           text-align: center;
         }
         .bazi-result-card {
-          margin-top: 20px;
+          margin-top: 16px;
           padding: 22px 26px;
           border: 1px solid rgba(51, 51, 51, 0.08);
           border-radius: 14px;
-          background: var(--surface);
+          background: #F2EDE5;
           box-shadow: var(--shadow);
         }
         .bazi-card-title {
@@ -553,14 +541,14 @@ export default function BaziPage() {
           border: 1px solid rgba(51, 51, 51, 0.06);
           border-radius: 12px;
           overflow: hidden;
-          background: var(--surface-strong);
+          background: #F2EDE5;
         }
         .bazi-pillar-header {
           padding: 10px 14px;
           font-size: 14px;
           font-weight: 600;
           color: #fff;
-          background: var(--gold), var(--gold-dark));
+          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
           text-align: center;
           letter-spacing: 0.06em;
         }
@@ -626,7 +614,7 @@ export default function BaziPage() {
           border-radius: 8px;
           font-size: 13px;
           color: var(--ink);
-          background: var(--surface-strong);
+          background: #F2EDE5;
           border: 1px solid rgba(51, 51, 51, 0.06);
         }
         .bazi-tag small {
@@ -735,7 +723,7 @@ export default function BaziPage() {
           padding: 12px 40px;
           border: none;
           border-radius: 12px;
-          background: var(--gold), var(--gold-dark));
+          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 16px;
           font-weight: 600;
@@ -759,7 +747,7 @@ export default function BaziPage() {
         }
         .bazi-ai-result-header {
           padding: 12px 18px;
-          background: var(--gold), var(--gold-dark));
+          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
           color: #fff;
           font-size: 15px;
           font-weight: 600;
@@ -773,7 +761,7 @@ export default function BaziPage() {
           color: var(--ink);
           line-height: 1.9;
           white-space: pre-wrap;
-          background: var(--surface-strong);
+          background: #F2EDE5;
         }
         @media (max-width: 768px) {
           .bazi-pillars-grid {
