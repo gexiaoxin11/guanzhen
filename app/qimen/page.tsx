@@ -21,12 +21,14 @@ export default function QimenPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const [y, m, d] = birthDate.split("-").map(Number);
+    const h = HOUR_STARTS[timeIndex] || 0;
     const input: QimenInput = {
-      year,
-      month,
-      day,
-      hour,
-      minute,
+      year: y,
+      month: m,
+      day: d,
+      hour: h,
+      minute: 0,
       timezone,
       question: question || undefined,
       panType,

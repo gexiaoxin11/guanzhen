@@ -59,12 +59,14 @@ export default function BaziPage() {
     setLoading(true);
 
     try {
+      const [y, m, d] = birthDate.split("-").map(Number);
+      const h = HOUR_STARTS[timeIndex] || 0;
       const input: BaziInput = {
-        birthYear: year,
-        birthMonth: month,
-        birthDay: day,
-        birthHour: hour,
-        birthMinute: minute,
+        birthYear: y,
+        birthMonth: m,
+        birthDay: d,
+        birthHour: h,
+        birthMinute: 0,
         gender,
         calendarType,
         isLeapMonth: calendarType === "lunar" ? isLeapMonth : undefined,

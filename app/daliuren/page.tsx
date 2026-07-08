@@ -13,11 +13,8 @@ const pad = (n: number) => String(n).padStart(2, "0");
 // ─── 组件 ───
 
 export default function DaliurenPage() {
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
-  const [day, setDay] = useState(now.getDate());
-  const [hour, setHour] = useState(now.getHours());
-  const [minute, setMinute] = useState(now.getMinutes());
+  const [birthDate, setBirthDate] = useState("1990-01-01");
+  const [timeIndex, setTimeIndex] = useState(0);
   const [timezone, setTimezone] = useState("Asia/Shanghai");
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<DaliurenOutput | null>(null);
@@ -33,7 +30,8 @@ export default function DaliurenPage() {
     setAiResult("");
     setLoading(true);
     try {
-      const date = `${year}-${pad(month)}-${pad(day)}`;
+      const h = HOUR_STARTS[timeIndex] || 0;
+      const date = `${birthDate}T${String(h).padStart(2, "0")}:00`;
       const input: DaliurenInput = { date, hour: h, minute: 0, timezone, question: question || undefined };
       const output = runDaliuren(input);
       setResult(output);
@@ -87,59 +85,19 @@ export default function DaliurenPage() {
         </section>
 
         {/* ── 排盘表单 ── */}
-        <form onSubmit={handleSubmit} style={{
-          display: "grid", gap: 16, padding: 24,
-          border: "1px solid var(--ink-faint)", borderRadius: 14,
-          background: "var(--surface)", boxShadow: "var(--shadow)", marginTop: 12,
-        }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(70px, 1fr))", gap: 10 }}>
-            <label style={labelStyle}>
-              <span>年</span>
-              <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} min={1900} max={2100} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              <span>月</span>
-              <input type="number" value={month} onChange={e => setMonth(Number(e.target.value))} min={1} max={12} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              <span>日</span>
-              <input type="number" value={day} onChange={e => setDay(Number(e.target.value))} min={1} max={31} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              <span>时</span>
-              <input type="number" value={hour} onChange={e => setHour(Number(e.target.value))} min={0} max={23} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              <span>分</span>
-              <input type="number" value={minute} onChange={e => setMinute(Number(e.target.value))} min={0} max={59} style={inputStyle} />
-            </label>
+        <form className="ziwei-form" onSubmit={handleSubmit}>
+          <div className="ziwei-form-row">
+            <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
+            <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
+            <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
+            <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
           </div>
-
-          <label style={labelStyle}>
-            <span>时区</span>
-            <input type="text" value={timezone} onChange={e => setTimezone(e.target.value)} placeholder="Asia/Shanghai"
-              style={{ ...inputStyle, width: "100%" }} />
-          </label>
-
-          <label style={labelStyle}>
-            <span>占事</span>
-            <textarea value={question} onChange={e => setQuestion(e.target.value)} placeholder="所问何事？" rows={2}
-              style={{ ...inputStyle, width: "100%", resize: "vertical" }} />
-          </label>
-
-          <button type="submit" disabled={loading} style={{
-            padding: "14px 40px", border: "none", borderRadius: 12,
-            background: "linear-gradient(135deg, var(--gold), var(--gold-dark))",
-            color: "#fff", fontSize: 18, fontWeight: 600, letterSpacing: "0.06em",
-            cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
-            boxShadow: "0 2px 14px rgba(212,65,21,0.28)", justifySelf: "center", minWidth: 160,
-          }}>
-            {loading ? "排盘中…" : "排 盘"}
-          </button>
-
-          {error && (
-            <p style={{ color: "var(--gold)", fontSize: 13, textAlign: "center", margin: 0 }}>{error}</p>
-          )}
+          <div style={{ marginTop: 12 }}>
+            <label className="field-label">占事（可选）</label>
+            <textarea value={question} onChange={e => setQuestion(e.target.value)} placeholder="心中所疑…" rows={2}
+              style={{ width: "100%", border: "1px solid var(--ink-faint)", borderRadius: 10, padding: "10px 12px", fontSize: 14, background: "var(--surface-strong)", color: "var(--ink)", resize: "vertical", marginTop: 4 }} />
+          </div>
+          {error && <p className="ziwei-error">{error}</p>}
         </form>
 
         {/* ── 结果区 ── */}
