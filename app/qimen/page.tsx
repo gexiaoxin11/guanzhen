@@ -79,51 +79,24 @@ export default function QimenPage() {
           <p className="qimen-subtitle">九天玄女所授，轩辕黄帝伐蚩尤，命风后演绎成文。古称帝王之学，运筹帷幄，决胜千里。</p>
         </div>
 
-        <form className="qimen-form" onSubmit={handleSubmit}>
-          <div className="qimen-form-grid">
-            <label className="qimen-field">
-              <span>年份</span>
-              <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} min={1900} max={2100} required />
-            </label>
-            <label className="qimen-field">
-              <span>月份</span>
-              <input type="number" value={month} onChange={(e) => setMonth(Number(e.target.value))} min={1} max={12} required />
-            </label>
-            <label className="qimen-field">
-              <span>日期</span>
-              <input type="number" value={day} onChange={(e) => setDay(Number(e.target.value))} min={1} max={31} required />
-            </label>
-            <label className="qimen-field">
-              <span>时辰</span>
-              <input type="number" value={hour} onChange={(e) => setHour(Number(e.target.value))} min={0} max={23} required />
-            </label>
-            <label className="qimen-field">
-              <span>分钟</span>
-              <input type="number" value={minute} onChange={(e) => setMinute(Number(e.target.value))} min={0} max={59} />
-            </label>
-            <label className="qimen-field">
-              <span>时区</span>
-              <input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" />
-            </label>
-            <label className="qimen-field">
-              <span>排盘方式</span>
-              <select value={panType} onChange={(e) => setPanType(e.target.value as "zhuan")}>
-                <option value="zhuan">转盘</option>
-              </select>
-            </label>
-            <label className="qimen-field">
-              <span>定局方法</span>
-              <select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}>
-                <option value="chaibu">拆补</option>
-                <option value="maoshan">茅山</option>
-              </select>
-            </label>
+        <form className="ziwei-form" onSubmit={handleSubmit}>
+          <div className="ziwei-form-row">
+            <label><span>年份</span><input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} min={1900} max={2100} required /></label>
+            <label><span>月份</span><input type="number" value={month} onChange={(e) => setMonth(Number(e.target.value))} min={1} max={12} required /></label>
+            <label><span>日期</span><input type="number" value={day} onChange={(e) => setDay(Number(e.target.value))} min={1} max={31} required /></label>
+            <label><span>时辰</span><input type="number" value={hour} onChange={(e) => setHour(Number(e.target.value))} min={0} max={23} required /></label>
+            <label><span>分钟</span><input type="number" value={minute} onChange={(e) => setMinute(Number(e.target.value))} min={0} max={59} /></label>
+            <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
+            <label><span>排盘方式</span><select value={panType} onChange={(e) => setPanType(e.target.value as "zhuan")}><option value="zhuan">转盘</option></select></label>
+            <label><span>定局方法</span><select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}><option value="chaibu">拆补</option><option value="maoshan">茅山</option></select></label>
+            <button type="submit" className="ziwei-submit">开始排盘</button>
           </div>
-          <label className="qimen-field qimen-field-wide">
-            <span>所问何事</span>
-            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="可选：请输入您想问的问题..." rows={2} />
-          </label>
-          <button className="qimen-submit" type="submit">排盘</button>
+          <div style={{ marginTop: 12 }}>
+            <label className="field-label">所问何事</label>
+            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="可选：请输入您想问的问题..." rows={2}
+              style={{ width: "100%", border: "1px solid var(--ink-faint)", borderRadius: 10, padding: "10px 12px", fontSize: 14, background: "var(--surface-strong)", color: "var(--ink)", resize: "vertical", marginTop: 4 }} />
+          </div>
+          
         </form>
 
         {result && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { runBazi, runBaziShenSha, type BaziInput, type BaziOutput, type BaziShenShaOutput } from "../../src/lib/taibu";
 import "../../src/styles.css";
 
@@ -129,59 +129,23 @@ export default function BaziPage() {
           <p className="bazi-subtitle">四柱推命 · 干支推演</p>
         </div>
 
-        <section className="bazi-form-card">
-          <div className="bazi-form-grid">
-            <label className="bazi-field">
-              <span>出生年</span>
-              <input type="number" value={year} onChange={e => setYear(Number(e.target.value))} placeholder="1984" />
-            </label>
-            <label className="bazi-field">
-              <span>出生月</span>
-              <input type="number" value={month} onChange={e => setMonth(Number(e.target.value))} min={1} max={12} placeholder="1" />
-            </label>
-            <label className="bazi-field">
-              <span>出生日</span>
-              <input type="number" value={day} onChange={e => setDay(Number(e.target.value))} min={1} max={31} placeholder="1" />
-            </label>
-            <label className="bazi-field">
-              <span>出生时</span>
-              <input type="number" value={hour} onChange={e => setHour(Number(e.target.value))} min={0} max={23} placeholder="12" />
-            </label>
-            <label className="bazi-field">
-              <span>出生分</span>
-              <input type="number" value={minute} onChange={e => setMinute(Number(e.target.value))} min={0} max={59} placeholder="0" />
-            </label>
-            <label className="bazi-field">
-              <span>性别</span>
-              <select value={gender} onChange={e => setGender(e.target.value as Gender)}>
-                <option value="male">男</option>
-                <option value="female">女</option>
-              </select>
-            </label>
-            <label className="bazi-field">
-              <span>历法</span>
-              <select value={calendarType} onChange={e => setCalendarType(e.target.value as CalendarType)}>
-                <option value="solar">公历</option>
-                <option value="lunar">农历</option>
-              </select>
-            </label>
+                <form className="ziwei-form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleSubmit(); }}>
+          <div className="ziwei-form-row">
+            <label><span>出生年</span><input type="number" value={year} onChange={e => setYear(Number(e.target.value))} placeholder="1984" /></label>
+            <label><span>出生月</span><input type="number" value={month} onChange={e => setMonth(Number(e.target.value))} min={1} max={12} placeholder="1" /></label>
+            <label><span>出生日</span><input type="number" value={day} onChange={e => setDay(Number(e.target.value))} min={1} max={31} placeholder="1" /></label>
+            <label><span>出生时</span><input type="number" value={hour} onChange={e => setHour(Number(e.target.value))} min={0} max={23} placeholder="12" /></label>
+            <label><span>出生分</span><input type="number" value={minute} onChange={e => setMinute(Number(e.target.value))} min={0} max={59} placeholder="0" /></label>
+            <label><span>性别</span><select value={gender} onChange={e => setGender(e.target.value as Gender)}><option value="male">男</option><option value="female">女</option></select></label>
+            <label><span>历法</span><select value={calendarType} onChange={e => setCalendarType(e.target.value as CalendarType)}><option value="solar">公历</option><option value="lunar">农历</option></select></label>
             {calendarType === "lunar" && (
-              <label className="bazi-field">
-                <span>闰月</span>
-                <select value={isLeapMonth ? "1" : "0"} onChange={e => setIsLeapMonth(e.target.value === "1")}>
-                  <option value="0">否</option>
-                  <option value="1">是</option>
-                </select>
-              </label>
+              <label><span>闰月</span><select value={isLeapMonth ? "1" : "0"} onChange={e => setIsLeapMonth(e.target.value === "1")}><option value="0">否</option><option value="1">是</option></select></label>
             )}
+            <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
           </div>
+          {error && <p className="ziwei-error">{error}</p>}
+        </form>
 
-          <button className="bazi-submit-btn" onClick={handleSubmit} disabled={loading}>
-            {loading ? "排盘中…" : "排盘"}
-          </button>
-        </section>
-
-        {error && <p className="bazi-error">{error}</p>}
 
         {baziResult && (
           <>
