@@ -3,15 +3,14 @@
 import { useState } from "react";
 import { runQimen, type QimenInput, type QimenOutput } from "../../src/lib/taibu";
 import "../../src/styles.css";
+import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 
 const PALACE_LAYOUT = [4, 9, 2, 3, 5, 7, 8, 1, 6];
 
 export default function QimenPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [day, setDay] = useState(new Date().getDate());
-  const [hour, setHour] = useState(new Date().getHours());
-  const [minute, setMinute] = useState(0);
+  const [birthDate, setBirthDate] = useState("1990-01-01");
+  const [timeIndex, setTimeIndex] = useState(0);
+  const [gender, setGender] = useState("男");
   const [timezone, setTimezone] = useState("Asia/Shanghai");
   const [question, setQuestion] = useState("");
   const [panType, setPanType] = useState<"zhuan">("zhuan");
@@ -81,22 +80,19 @@ export default function QimenPage() {
 
         <form className="ziwei-form" onSubmit={handleSubmit}>
           <div className="ziwei-form-row">
-            <label><span>年份</span><input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} min={1900} max={2100} required /></label>
-            <label><span>月份</span><input type="number" value={month} onChange={(e) => setMonth(Number(e.target.value))} min={1} max={12} required /></label>
-            <label><span>日期</span><input type="number" value={day} onChange={(e) => setDay(Number(e.target.value))} min={1} max={31} required /></label>
-            <label><span>时辰</span><input type="number" value={hour} onChange={(e) => setHour(Number(e.target.value))} min={0} max={23} required /></label>
-            <label><span>分钟</span><input type="number" value={minute} onChange={(e) => setMinute(Number(e.target.value))} min={0} max={59} /></label>
+            <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
+            <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
+            <label><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value)}><option value="男">男</option><option value="女">女</option></select></label>
             <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
             <label><span>排盘方式</span><select value={panType} onChange={(e) => setPanType(e.target.value as "zhuan")}><option value="zhuan">转盘</option></select></label>
-            <label><span>定局方法</span><select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}><option value="chaibu">拆补</option><option value="maoshan">茅山</option></select></label>
+            <label><span>局法</span><select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}><option value="chaibu">拆补</option><option value="maoshan">茅山</option></select></label>
             <button type="submit" className="ziwei-submit">开始排盘</button>
           </div>
           <div style={{ marginTop: 12 }}>
             <label className="field-label">所问何事</label>
-            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="可选：请输入您想问的问题..." rows={2}
+            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="可选..." rows={2}
               style={{ width: "100%", border: "1px solid var(--ink-faint)", borderRadius: 10, padding: "10px 12px", fontSize: 14, background: "var(--surface-strong)", color: "var(--ink)", resize: "vertical", marginTop: 4 }} />
           </div>
-          
         </form>
 
         {result && (
