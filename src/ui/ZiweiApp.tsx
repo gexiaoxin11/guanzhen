@@ -4,7 +4,7 @@ import { astro } from "iztro";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { generateZiweiAnalysis } from "../domain/ziweiAnalysis";
-import "../styles.css";
+import { taibuCalculateZiwei, type ZiweiOutput } from "../lib/ziweiTaibu";import "../styles.css";
 
 // ─── 四化映射表: 天干 → [禄星, 权星, 科星, 忌星] ───
 const MUTAGEN_MAP: Record<string, [string, string, string, string]> = {
@@ -106,6 +106,14 @@ export function ZiweiApp() {
     if (!astroData) return null;
     return generateZiweiAnalysis(astroData);
   }, [astroData]);
+
+  const taibuZiwei = useMemo(() => {
+    if (!astroData || !birthDate) return null;
+    try {
+      const [y, m, d] = birthDate.split("-").map(Number);
+      return taibuCalculateZiwei(y, m, d, timeIndex, gender as "男" | "女");
+    } catch { return null; }
+  }, [astroData, birthDate, timeIndex, gender]);
 
   function saveLocalHistory() {
     try {
@@ -234,7 +242,7 @@ export function ZiweiApp() {
   if (!mounted) {
     return <div className="app-shell"><header className="topbar">
       <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
-      <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
+      <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
       <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
     </header><main className="main-flow" /></div>;
   }
@@ -243,7 +251,7 @@ export function ZiweiApp() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
         <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
       <main className="main-flow">
@@ -535,6 +543,41 @@ export function ZiweiApp() {
                     <div className="ziwei-analysis-block">
                       <h4>命身双主</h4>
                       <p>{analysis.soulBodyAnalysis}</p>
+                    </div>
+                  )}
+                  {taibuZiwei && (
+                    <div className="ziwei-analysis-block">
+                      <h4>命主星 · 身主星（iztro补充）</h4>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 13 }}>
+                        <div>
+                          <span style={{ color: "var(--ink-soft)", fontSize: 11 }}>命主星</span>
+                          <div style={{ color: "var(--ink)", fontWeight: 600 }}>{taibuZiwei.lifeMasterStar || "-"}</div>
+                        </div>
+                        <div>
+                          <span style={{ color: "var(--ink-soft)", fontSize: 11 }}>身主星</span>
+                          <div style={{ color: "var(--ink)", fontWeight: 600 }}>{taibuZiwei.bodyMasterStar || "-"}</div>
+                        </div>
+                      </div>
+                      {taibuZiwei.smallLimit && taibuZiwei.smallLimit.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <span style={{ color: "var(--ink-soft)", fontSize: 11 }}>小限</span>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 8px", fontSize: 11, marginTop: 4 }}>
+                            {taibuZiwei.smallLimit.map((sl, i) => (
+                              <span key={i} style={{ color: "var(--ink)" }}>{sl.palaceName}: {sl.ages.join(",")}岁</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {taibuZiwei.scholarStars && taibuZiwei.scholarStars.length > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <span style={{ color: "var(--ink-soft)", fontSize: 11 }}>博士十二星</span>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 8px", fontSize: 11, marginTop: 4 }}>
+                            {taibuZiwei.scholarStars.map((ss, i) => (
+                              <span key={i} style={{ color: "var(--ink)" }}>{ss.starName}({ss.palaceName})</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

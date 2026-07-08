@@ -16,7 +16,7 @@ import type { LiuyaoChart, LiuyaoInput, Topic, YaoLine, YaoValue } from "../doma
 import { getBrowserSupabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { Solar } from "lunar-javascript";
 
-type CastMode = "auto" | "manual";
+import { taibuAnalyzeLiuyao } from "../lib/liuyaoTaibu";type CastMode = "auto" | "manual";
 type Persona = "plain" | "hermit" | "classic";
 type Depth = "standard" | "deep";
 
@@ -161,6 +161,18 @@ export function App() {
     if (!canCalculate) return null;
     return calculateLiuyao(input);
   }, [canCalculate, input]);
+
+  const taibuAnalysis = useMemo(() => {
+    if (!chart || !chart.original) return null;
+    try {
+      return taibuAnalyzeLiuyao(
+        chart.original.name,
+        chart.changed?.name,
+        input.question,
+        input.date + "T" + String(input.hour).padStart(2, "0") + ":" + String(input.minute).padStart(2, "0"),
+      );
+    } catch { return null; }
+  }, [chart, input.question, input.date, input.hour, input.minute]);
 
   useEffect(() => {
     try {
@@ -491,7 +503,13 @@ export function App() {
             <section className="preview-stack">
               <HexagramPreview chart={chart} />
               {quickRead && <QuickRead quickRead={quickRead} />}
-            </section>
+            {taibuAnalysis && submitted && (
+              <article className="reading-card">
+                <h2>用神 · 伏神 · 应期</h2>
+                <div className="divider" />
+                <TaibuAnalysisView analysis={taibuAnalysis} />
+              </article>
+            )}            </section>
           )}
 
           {canCalculate && (
@@ -510,7 +528,13 @@ export function App() {
             </div>
             <HexagramPreview chart={chart} expanded />
             {quickRead && <QuickRead quickRead={quickRead} />}
-            <article className="reading-card">
+            {taibuAnalysis && submitted && (
+              <article className="reading-card">
+                <h2>用神 · 伏神 · 应期</h2>
+                <div className="divider" />
+                <TaibuAnalysisView analysis={taibuAnalysis} />
+              </article>
+            )}            <article className="reading-card">
               <h2>解卦分析</h2>
               <div className="divider" />
               {loadingReading ? <ReadingSkeleton /> : <MarkdownLike text={reading} />}
@@ -540,7 +564,7 @@ export function App() {
 }
 
 function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | null; supabaseReady: boolean; onOpenAuth: () => void }) {
-  const nav = ["首页", "六爻", "紫微"];
+  const nav = ["首页", "六爻", "紫微", "八字排盘", "奇门遁甲", "大六壬", "梅花易数"];
   return (
     <header className="topbar">
       <a className="brand" href="/">
@@ -551,7 +575,7 @@ function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | 
         {nav.map((item) => (
           <a
             className={item === "六爻" ? "active" : ""}
-            href={item === "首页" ? "/" : item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : "#"}
+            href={item === "首页" ? "/" : item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : item === "八字排盘" ? "/bazi" : item === "奇门遁甲" ? "/qimen" : item === "大六壬" ? "/daliuren" : item === "梅花易数" ? "/meihua" : "#"}
             key={item}
           >{item}</a>
         ))}
@@ -1045,4 +1069,133 @@ function buildQuickRead(chart: LiuyaoChart, question: string) {
   }
 
   return { headline, sections };
+}
+
+function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnalyzeLiuyao> }) {
+  if (!analysis) return null;
+  const ys = (analysis as any).yongShen || [];
+  const fs = (analysis as any).fuShen || [];
+  const ss = (analysis as any).shenSystemByYongShen || [];
+  const gs = (analysis as any).guaShen;
+  const kws = (analysis as any).kongWangByPillar;
+  const liuchong = (analysis as any).liuChongGuaInfo;
+  const liuhe = (analysis as any).liuHeGuaInfo;
+  const fanyin = (analysis as any).guaFanFuYin;
+  const timeRecs = (analysis as any).timeRecommendations || [];
+  const hue = (analysis as any).nuclearHexagram;
+  const cuo = (analysis as any).oppositeHexagram;
+  const zong = (analysis as any).reversedHexagram;
+  const sanhe = (analysis as any).sanHeAnalysis;
+
+  const labelStyle: React.CSSProperties = { color: "var(--ink-soft)", fontSize: 11, marginBottom: 2 };
+  const valStyle: React.CSSProperties = { color: "var(--ink)", fontSize: 13, fontWeight: 600 };
+  const chipStyle: React.CSSProperties = {
+    display: "inline-block", padding: "2px 8px", borderRadius: 4,
+    background: "var(--gold-soft)", color: "var(--gold-dark)", fontSize: 11, margin: "2px 4px 2px 0",
+  };
+
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      {ys.length > 0 && (
+        <div>
+          <div style={labelStyle}>用神</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {ys.map((y: any, i: number) => (
+              <span key={i} style={chipStyle}>{y.target || y.label} · {y.yaoPosition || y.position}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {fs.length > 0 && (
+        <div>
+          <div style={labelStyle}>伏神</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {fs.map((f: any, i: number) => (
+              <span key={i} style={{ ...chipStyle, background: "rgba(212,65,21,0.08)" }}>{f.sixRelation || f.label} · {f.hiddenUnder}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {ss.length > 0 && (
+        <div>
+          <div style={labelStyle}>用神系统</div>
+          {ss.map((s: any, i: number) => (
+            <div key={i} style={{ fontSize: 12, color: "var(--ink)", lineHeight: 1.6 }}>
+              <strong>{s.yongShen?.label || s.yongShenTarget}:</strong>{" "}
+              原神: {s.yuanShen || "-"} | 忌神: {s.jiShen || "-"} | 仇神: {s.chouShen || "-"}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {kws && (
+        <div>
+          <div style={labelStyle}>空亡</div>
+          <div style={valStyle}>{typeof kws === "object" ? (kws as any).xun || JSON.stringify(kws).slice(0, 40) : String(kws)}</div>
+        </div>
+      )}
+
+      {gs && (
+        <div>
+          <div style={labelStyle}>卦身</div>
+          <div style={valStyle}>{typeof gs === "object" ? (gs as any).label || (gs as any).yaoPosition || JSON.stringify(gs).slice(0, 40) : String(gs)}</div>
+        </div>
+      )}
+
+      {liuchong && (
+        <div>
+          <div style={labelStyle}>六冲卦</div>
+          <div style={{ fontSize: 12, color: "var(--red)" }}>{(liuchong as any).isLiuChong ? "是" : "否"}{(liuchong as any).summary ? ` — ${(liuchong as any).summary}` : ""}</div>
+        </div>
+      )}
+
+      {liuhe && (
+        <div>
+          <div style={labelStyle}>六合卦</div>
+          <div style={{ fontSize: 12, color: "var(--green)" }}>{(liuhe as any).isLiuHe ? "是" : "否"}{(liuhe as any).summary ? ` — ${(liuhe as any).summary}` : ""}</div>
+        </div>
+      )}
+
+      {fanyin && ((fanyin as any).fanYin || (fanyin as any).fuYin) && (
+        <div>
+          <div style={labelStyle}>反吟/伏吟</div>
+          <div style={{ fontSize: 12, color: "var(--ink)" }}>
+            {(fanyin as any).fanYin ? "反吟" : ""}{(fanyin as any).fanYin && (fanyin as any).fuYin ? " · " : ""}{(fanyin as any).fuYin ? "伏吟" : ""}
+            {(fanyin as any).summary ? ` — ${(fanyin as any).summary}` : ""}
+          </div>
+        </div>
+      )}
+
+      {sanhe && (
+        <div>
+          <div style={labelStyle}>三合局</div>
+          <div style={{ fontSize: 12, color: "var(--ink)" }}>{(sanhe as any).summary || JSON.stringify(sanhe).slice(0, 80)}</div>
+        </div>
+      )}
+
+      {(hue || cuo || zong) && (
+        <div>
+          <div style={labelStyle}>互卦 · 错卦 · 综卦</div>
+          <div style={{ display: "flex", gap: 8, fontSize: 12 }}>
+            {hue && <span style={chipStyle}>互卦: {(hue as any).name || ""}</span>}
+            {cuo && <span style={chipStyle}>错卦: {(cuo as any).name || ""}</span>}
+            {zong && <span style={chipStyle}>综卦: {(zong as any).name || ""}</span>}
+          </div>
+        </div>
+      )}
+
+      {timeRecs.length > 0 && (
+        <div>
+          <div style={labelStyle}>应期推测</div>
+          {timeRecs.map((t: any, i: number) => (
+            <div key={i} style={{ fontSize: 12, color: "var(--ink)", marginTop: 2 }}>
+              {t.phase || ""} {t.trigger || ""}: {t.summary || ""}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
