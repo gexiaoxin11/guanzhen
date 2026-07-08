@@ -161,8 +161,10 @@ export function App() {
   }, [canCalculate, input]);
 
   useEffect(() => {
-    const raw = localStorage.getItem("mirror-liuyao-archives");
-    if (raw) setArchives(JSON.parse(raw));
+    try {
+      const raw = localStorage.getItem("mirror-liuyao-archives");
+      if (raw) setArchives(JSON.parse(raw));
+    } catch { /* corrupted data, reset */ }
   }, []);
 
   useEffect(() => {
@@ -347,7 +349,7 @@ export function App() {
     }
     const next = [item, ...archives.filter((archive) => archive.question !== item.question)].slice(0, 24);
     setArchives(next);
-    localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next));
+    try { localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next)); } catch { /* quota exceeded */ }
     // Also save full record with chart and reading
     return item.id;
   }
@@ -361,12 +363,12 @@ export function App() {
       }
       const next = archives.filter((archive) => archive.id !== id);
       setArchives(next);
-      localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next));
+      try { localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next)); } catch { /* quota exceeded */ }
       return;
     }
     const next = archives.filter((archive) => archive.id !== id);
     setArchives(next);
-    localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next));
+    try { localStorage.setItem("mirror-liuyao-archives", JSON.stringify(next)); } catch { /* quota exceeded */ }
   }
 
   function resetAll() {
