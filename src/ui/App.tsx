@@ -506,7 +506,7 @@ export function App() {
 
           {canCalculate && !submitted && (
             <section className="preview-stack">
-              <HexagramPreview chart={chart} />
+              {chart && <HexagramPreview chart={chart} />}
               {quickRead && <QuickRead quickRead={quickRead} />}
             {taibuAnalysis && submitted && (
               <article className="reading-card">

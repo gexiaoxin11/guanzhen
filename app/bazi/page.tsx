@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { runBazi, runBaziShenSha, runBaziDayun, type BaziInput, type BaziOutput, type BaziShenShaOutput, type DayunOutput } from "../../src/lib/taibu";
+import { runBazi, runBaziShenSha, runBaziDayun, type BaziInput, type BaziOutput, type DayunOutput } from "../../src/lib/taibu";
 
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
@@ -46,7 +46,7 @@ export default function BaziPage() {
   const [isLeapMonth, setIsLeapMonth] = useState(false);
 
   const [baziResult, setBaziResult] = useState<BaziOutput | null>(null);
-  const [shenShaResult, setShenShaResult] = useState<BaziShenShaOutput | null>(null);
+  const [shenShaResult, setShenShaResult] = useState<any>(null);
   const [dayunResult, setDayunResult] = useState<DayunOutput | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,8 +75,8 @@ export default function BaziPage() {
         isLeapMonth: calendarType === "lunar" ? isLeapMonth : undefined,
       };
 
-      const result = runBazi(input);
-      const shenSha = runBaziShenSha(input);
+      const result = await runBazi(input);
+      const shenSha = await runBaziShenSha(input);
       setBaziResult(result);
       setShenShaResult(shenSha);
       
@@ -326,7 +326,7 @@ export default function BaziPage() {
                     <div className="bazi-shensha-group">
                       <div className="bazi-shensha-label good">吉神</div>
                       <div className="bazi-tag-list">
-                        {shenShaResult.jiShen.map((s, i) => (
+                        {shenShaResult.jiShen.map((s: string, i: number) => (
                           <span key={i} className="bazi-tag bazi-tag-ji">{s}</span>
                         ))}
                       </div>
@@ -336,7 +336,7 @@ export default function BaziPage() {
                     <div className="bazi-shensha-group">
                       <div className="bazi-shensha-label bad">凶煞</div>
                       <div className="bazi-tag-list">
-                        {shenShaResult.xiongSha.map((s, i) => (
+                        {shenShaResult.xiongSha.map((s: string, i: number) => (
                           <span key={i} className="bazi-tag bazi-tag-xiong">{s}</span>
                         ))}
                       </div>
@@ -350,7 +350,7 @@ export default function BaziPage() {
                       <div className="bazi-shensha-group">
                         <div className="bazi-shensha-label good">日宜</div>
                         <div className="bazi-tag-list">
-                          {shenShaResult.dayYi.map((s, i) => (
+                          {shenShaResult.dayYi.map((s: string, i: number) => (
                             <span key={i} className="bazi-tag bazi-tag-ji">{s}</span>
                           ))}
                         </div>
@@ -360,7 +360,7 @@ export default function BaziPage() {
                       <div className="bazi-shensha-group">
                         <div className="bazi-shensha-label bad">日忌</div>
                         <div className="bazi-tag-list">
-                          {shenShaResult.dayJi.map((s, i) => (
+                          {shenShaResult.dayJi.map((s: string, i: number) => (
                             <span key={i} className="bazi-tag bazi-tag-xiong">{s}</span>
                           ))}
                         </div>

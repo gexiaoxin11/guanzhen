@@ -1,20 +1,19 @@
 import {
   calculateLiuyao,
-  performFullAnalysis,
   type LiuyaoInput,
   type LiuyaoOutput,
 } from "taibu-core/liuyao";
 import { calculateZiwei, type ZiweiInput, type ZiweiOutput } from "taibu-core/ziwei";
-import { calculateBazi, calculateBaziShenShaData, type BaziInput, type BaziOutput, type BaziShenShaOutput } from "taibu-core/bazi";
+import { calculateBazi, calculateBaziShenShaData, type BaziInput, type BaziOutput } from "taibu-core/bazi";
 import { calculateQimen, type QimenInput, type QimenOutput } from "taibu-core/qimen";
 import { calculateDaliuren, type DaliurenInput, type DaliurenOutput } from "taibu-core/daliuren";
 import { calculateBaziDayun, type DayunInput, type DayunOutput } from "taibu-core/bazi-dayun";
 import { calculateMeihua, type MeihuaInput, type MeihuaOutput } from "taibu-core/meihua";
 
-export type { LiuyaoInput, LiuyaoOutput, ZiweiInput, ZiweiOutput, BaziInput, BaziOutput, BaziShenShaOutput, QimenInput, QimenOutput, DaliurenInput, DaliurenOutput, MeihuaInput, MeihuaOutput };
+export type { LiuyaoInput, LiuyaoOutput, ZiweiInput, ZiweiOutput, BaziInput, BaziOutput, QimenInput, QimenOutput, DaliurenInput, DaliurenOutput, MeihuaInput, MeihuaOutput };
 
 export async function runLiuyao(input: LiuyaoInput) {
-  return performFullAnalysis(input);
+  return calculateLiuyao(input);
 }
 
 export async function runLiuyaoBasic(input: LiuyaoInput): Promise<LiuyaoOutput> {
@@ -34,7 +33,7 @@ export async function runBazi(input: BaziInput): Promise<BaziOutput> {
   return calculateBazi(input);
 }
 
-export async function runBaziShenSha(input: BaziInput): Promise<BaziShenShaOutput> {
+export async function runBaziShenSha(input: BaziInput): Promise<any> {
   return calculateBaziShenShaData(input);
 }
 

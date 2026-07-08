@@ -174,7 +174,7 @@ export default function MeihuaPage() {
             {result.ganZhiTime && (
               <div style={{ ...badgeRow, marginBottom: 18 }}>
                 <span style={{ color: "var(--ink-soft)", fontSize: 13 }}>干支历：</span>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>{result.ganZhiTime}</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{`${result.ganZhiTime.year.gan}${result.ganZhiTime.year.zhi}年 ${result.ganZhiTime.month.gan}${result.ganZhiTime.month.zhi}月 ${result.ganZhiTime.day.gan}${result.ganZhiTime.day.zhi}日 ${result.ganZhiTime.hour.gan}${result.ganZhiTime.hour.zhi}时`}</span>
               </div>
             )}
 
@@ -207,13 +207,13 @@ export default function MeihuaPage() {
             {/* 三卦卡片 */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
               {result.mainHexagram && (
-                <HexagramCard title="本卦" hex={result.mainHexagram as { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }} movingLine={result.movingLine as number | undefined} />
+                <HexagramCard title="本卦" hex={result.mainHexagram as any} movingLine={result.movingLine as number | undefined} />
               )}
               {result.nuclearHexagram && (
-                <HexagramCard title="互卦" hex={result.nuclearHexagram as { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }} />
+                <HexagramCard title="互卦" hex={result.nuclearHexagram as any} />
               )}
               {result.changedHexagram && (
-                <HexagramCard title="变卦" hex={result.changedHexagram as { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }} />
+                <HexagramCard title="变卦" hex={result.changedHexagram as any} />
               )}
             </div>
 
@@ -231,13 +231,13 @@ export default function MeihuaPage() {
                   {result.bodyTrigram && (
                     <div>
                       <span style={{ color: "var(--ink-soft)", fontSize: 13 }}>体卦 </span>
-                      <span style={{ fontSize: 15, fontWeight: 600 }}>{result.bodyTrigram}</span>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>{result.bodyTrigram.name}</span>
                     </div>
                   )}
                   {result.useTrigram && (
                     <div>
                       <span style={{ color: "var(--ink-soft)", fontSize: 13 }}>用卦 </span>
-                      <span style={{ fontSize: 15, fontWeight: 600 }}>{result.useTrigram}</span>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>{result.useTrigram.name}</span>
                     </div>
                   )}
                   {result.bodyUseRelation && (
@@ -261,25 +261,25 @@ export default function MeihuaPage() {
             {(result.oppositeHexagram || result.reversedHexagram) && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
                 {result.oppositeHexagram && (
-                  <HexagramCard title="错卦" hex={result.oppositeHexagram as { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }} />
+                  <HexagramCard title="错卦" hex={result.oppositeHexagram as any} />
                 )}
                 {result.reversedHexagram && (
-                  <HexagramCard title="综卦" hex={result.reversedHexagram as { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }} />
+                  <HexagramCard title="综卦" hex={result.reversedHexagram as any} />
                 )}
               </div>
             )}
 
             {/* 月令旺衰 */}
             {result.seasonalState && (
-              <InfoBlock title="月令旺衰">{result.seasonalState}</InfoBlock>
+              <InfoBlock title="月令旺衰">{`月建${result.seasonalState.monthBranch} · 体${result.seasonalState.body} · 用${result.seasonalState.use}${result.seasonalState.bodyMutual ? ` · 体互${result.seasonalState.bodyMutual}` : ""}${result.seasonalState.useMutual ? ` · 用互${result.seasonalState.useMutual}` : ""}${result.seasonalState.changed ? ` · 变${result.seasonalState.changed}` : ""}`}</InfoBlock>
             )}
 
             {/* 互卦体用 */}
             {result.interactionReadings && result.interactionReadings.length > 0 && (
               <InfoBlock title="互卦体用">
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {result.interactionReadings.map((r, i) => (
-                    <div key={i} style={{ fontSize: 14, color: "var(--ink)" }}>{r}</div>
+                  {result.interactionReadings.map((r: { stageLabel: string; relation: string; favorable: boolean; summary: string }, i: number) => (
+                    <div key={i} style={{ fontSize: 14, color: "var(--ink)" }}>{r.stageLabel}：{r.relation}（{r.favorable ? "吉" : "凶"}）- {r.summary}</div>
                   ))}
                 </div>
               </InfoBlock>
@@ -289,7 +289,7 @@ export default function MeihuaPage() {
             {result.timingHints && result.timingHints.length > 0 && (
               <InfoBlock title="应期线索">
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {result.timingHints.map((t, i) => (
+                  {result.timingHints.map((t: { phase: string; trigger: string; summary: string }, i: number) => (
                     <span key={i} style={{
                       padding: "4px 12px",
                       borderRadius: 20,
@@ -297,7 +297,7 @@ export default function MeihuaPage() {
                       color: "var(--gold-dark)",
                       fontSize: 13,
                       fontWeight: 500,
-                    }}>{t}</span>
+                    }}>{t.trigger}: {t.summary}</span>
                   ))}
                 </div>
               </InfoBlock>
@@ -307,7 +307,7 @@ export default function MeihuaPage() {
             {result.warnings && result.warnings.length > 0 && (
               <InfoBlock title="警语">
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {result.warnings.map((w, i) => (
+                  {result.warnings.map((w: string, i: number) => (
                     <div key={i} style={{ fontSize: 13, color: "var(--red)" }}>⚠ {w}</div>
                   ))}
                 </div>
@@ -395,7 +395,7 @@ const badgeRow: React.CSSProperties = {
   background: "rgba(51,51,51,0.03)",
 };
 
-function HexagramCard({ title, hex, movingLine }: { title: string; hex: { name?: string; code?: string; upperTrigram?: string; lowerTrigram?: string; element?: string; guaCi?: string; xiangCi?: string }; movingLine?: number }) {
+function HexagramCard({ title, hex, movingLine }: { title: string; hex: any; movingLine?: number }) {
   return (
     <div style={{
       padding: "16px",
@@ -407,8 +407,8 @@ function HexagramCard({ title, hex, movingLine }: { title: string; hex: { name?:
       {hex.name && <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{hex.name}</div>}
       {hex.code && <div style={{ fontSize: 26, fontFamily: "monospace", marginBottom: 8, color: "var(--ink)", letterSpacing: 2 }}>{hex.code}</div>}
       {hex.element && <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 2 }}>五行：{hex.element}</div>}
-      {hex.upperTrigram && <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 2 }}>上卦：{hex.upperTrigram}</div>}
-      {hex.lowerTrigram && <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 8 }}>下卦：{hex.lowerTrigram}</div>}
+      {hex.upperTrigram && <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 2 }}>上卦：{typeof hex.upperTrigram === 'string' ? hex.upperTrigram : (hex.upperTrigram as any).name || JSON.stringify(hex.upperTrigram)}</div>}
+      {hex.lowerTrigram && <div style={{ fontSize: 13, color: "var(--ink-soft)", marginBottom: 8 }}>下卦：{typeof hex.lowerTrigram === 'string' ? hex.lowerTrigram : (hex.lowerTrigram as any).name || JSON.stringify(hex.lowerTrigram)}</div>}
       {typeof movingLine === "number" && (
         <div style={{ fontSize: 12, color: "var(--gold-dark)", marginBottom: 8, fontWeight: 600 }}>动爻：第{movingLine}爻</div>
       )}

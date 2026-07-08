@@ -1,4 +1,4 @@
-import { calculateLiuyao, performFullAnalysis, type LiuyaoInput, type LiuyaoOutput } from "taibu-core/liuyao";
+import { calculateLiuyao, type LiuyaoInput, type LiuyaoOutput } from "taibu-core/liuyao";
 
 export async function taibuAnalyzeLiuyao(
   hexagramName: string,
@@ -15,7 +15,7 @@ export async function taibuAnalyzeLiuyao(
     date,
     detailLevel: "full",
   };
-  return performFullAnalysis(input);
+  return calculateLiuyao(input);
 }
 
 export async function taibuBasicLiuyao(input: LiuyaoInput): Promise<LiuyaoOutput> {

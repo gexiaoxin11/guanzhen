@@ -54,8 +54,8 @@ export default function QimenPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          input: { year, month, day, hour, minute, timezone, question, panType, juMethod },
           output: result,
+          question,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

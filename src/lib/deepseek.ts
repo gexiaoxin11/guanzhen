@@ -3,13 +3,11 @@ import { buildLocalReading } from "../domain/readingRules";
 import { searchDocuments } from "./documentSearch";
 import type { LiuyaoChart } from "../domain/types";
 
-type ChartData = LiuyaoChart | { type: string; data: any };
-
 type ReadingRequest = {
   question: string;
   persona: string;
   depth: string;
-  chart: ChartData;
+  chart: any;
   retrievedContext?: string[];
 };
 
@@ -19,7 +17,7 @@ function createDeepSeekClient() {
   return new OpenAI({ apiKey, baseURL: "https://api.deepseek.com" });
 }
 
-function isLiuyaoChart(chart: ChartData): chart is LiuyaoChart {
+function isLiuyaoChart(chart: any): chart is LiuyaoChart {
   return chart && "lines" in chart && Array.isArray((chart as LiuyaoChart).lines);
 }
 
@@ -46,7 +44,7 @@ export async function generateReading(payload: ReadingRequest) {
 
   // If chart is non-liuyao and no DeepSeek client, return a friendly message
   if (!client) {
-    if (chartType === "liuyao") return buildLocalReading(payload);
+    if (chartType === "liuyao") return buildLocalReading(payload as any);
     return `【${CHART_TYPE_NAMES[chartType] || "排盘"}结果】\n\nAI 解读服务暂未配置，请确保已设置 DEEPSEEK_API_KEY 环境变量。\n\n排盘数据已生成，您可以根据以下数据进行自行分析：\n${JSON.stringify(chartData, null, 2)}`;
   }
 
@@ -92,10 +90,10 @@ export async function generateReading(payload: ReadingRequest) {
       })
     );
 
-    return response.choices[0]?.message?.content?.trim() || fallbackMessage(chartType, chartData);
+    return response.choices[0]?.message?.content?.trim() || fallbackMessage(chartType, chartData) as any;
   } catch (error: any) {
     console.error("DeepSeek API error:", error?.message || error);
-    if (chartType === "liuyao") return buildLocalReading(payload);
+    if (chartType === "liuyao") return buildLocalReading(payload as any);
     return fallbackMessage(chartType, chartData);
   }
 }

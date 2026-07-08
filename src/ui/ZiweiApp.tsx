@@ -511,7 +511,7 @@ export function ZiweiApp() {
                       <h3>三方四正</h3>
                       {(() => {
                         try {
-                          const sp = astroData.surroundedPalaces(selectedPalaceIdx);
+                          const sp = astroData.surroundedPalaces(selectedPalaceIdx!);
                           const entries = [
                             { label: "本宫", p: sp.target },
                             { label: "对宫", p: sp.opposite },

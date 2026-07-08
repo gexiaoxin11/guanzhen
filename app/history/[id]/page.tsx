@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass from "lucide-react";
+import { Compass } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getBrowserSupabase, isSupabaseConfigured } from "../../../src/lib/supabaseClient";

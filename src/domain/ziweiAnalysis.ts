@@ -119,7 +119,7 @@ function analyzeStarCombinations(palaces: PalaceData[]): Array<{ title: string; 
 
   // 机月同梁格局
   const jiYueTongLiang = ["天机", "太阴", "天同", "天梁"];
-  const jmtlMatch = jiYueTongLiang.filter((s) => majorNames.includes(s));
+  const jmtlMatch = jiYueTongLiang.filter((s) => (majorNames as string[]).includes(s));
   if (jmtlMatch.length >= 2) {
     combos.push({
       title: "机月同梁格",
@@ -257,7 +257,7 @@ function analyzeBirthMutagen(
   palaces: PalaceData[],
   heavenlyStem: string,
 ): { items: Array<{ label: string; star: string; palace: string; note: string }>; stem: string } {
-  const stars = MUTAGEN_MAP[heavenlyStem];
+  const stars = MUTAGEN_MAP[heavenlyStem] as [string, string, string, string] | undefined;
   const items: Array<{ label: string; star: string; palace: string; note: string }> = [];
 
   if (!stars) return { items, stem: heavenlyStem };
