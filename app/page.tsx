@@ -12,28 +12,14 @@ export default function HomePage() {
       <header className="topbar">
         <a className="brand" href="/">
           <span>观真</span>
-          <small>Truthful Hexagram</small>
+          
         </a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/" className="active">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
         <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
 
       <main className="main-flow">
         <section className="hero">
-          <div className="bagua">
-            <div className="taiji" />
-            <div className="bagua-ring spinning">
-              {["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"].map((trigram, index) => (
-                <span key={trigram} style={{
-                  transform: `rotate(${index * 45}deg) translateY(-160px) rotate(-${index * 45}deg)`,
-                }}>{trigram}</span>
-              ))}
-            </div>
-            <div className="hex-lines floating">
-              <span className="broken" /><span className="broken" /><span className="broken" /><span /><span /><span />
-            </div>
-          </div>
-
           <p className="hero-kicker">古籍为根 · AI 参详</p>
           <h1 style={{ fontSize: 60, fontWeight: 300, letterSpacing: "0.14em", margin: "8px 0 18px" }}>观真</h1>
           <p style={{ maxWidth: 460, color: "var(--ink-soft)", fontSize: 14, lineHeight: 1.8 }}>
@@ -43,7 +29,7 @@ export default function HomePage() {
         </section>
 
         <footer style={{ textAlign: "center", color: "var(--ink-soft)", fontSize: 12, marginTop: 60, paddingBottom: 40 }}>
-          仅作文化研究与体验，不构成任何决策建议
+          仅作为化研究与体验，不构成任何决策建议
         </footer>
       </main>
     </div>

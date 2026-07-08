@@ -303,7 +303,7 @@ export function ZiweiApp() {
 
   if (!mounted) {
     return <div className="app-shell"><header className="topbar">
-      <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
+      <a className="brand" href="/"><span>观真</span></a>
       <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
       <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
     </header><main className="main-flow" /></div>;
@@ -312,7 +312,7 @@ export function ZiweiApp() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
+        <a className="brand" href="/"><span>观真</span></a>
         <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
         <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>

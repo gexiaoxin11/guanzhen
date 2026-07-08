@@ -482,10 +482,10 @@ export function App() {
               <div className="shake-zone">
 <CoinOrbit active={casting} values={input.lineValues} />
                 <CastProgress casts={coinCasts} values={input.lineValues} />
-                <LiveHexagram values={input.lineValues} />
                 <button
                   type="button"
                   className="dark-action"
+                  style={{ background: "var(--red)" }}
                   onClick={() => {
                     if (input.lineValues.length === 6) {
                       setConfirmReset(true);
@@ -574,7 +574,7 @@ function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | 
     <header className="topbar">
       <a className="brand" href="/">
         <span>观真</span>
-        <small>Truthful Hexagram</small>
+        
       </a>
       <nav className="desktop-nav">
         {nav.map((item) => (

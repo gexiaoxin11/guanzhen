@@ -109,7 +109,7 @@ export default function HistoryDetailPage() {
       <header className="topbar">
         <a className="brand" href="/">
           <span>观真</span>
-          <small>Truthful Hexagram</small>
+          
         </a>
         <nav className="desktop-nav">
           <a className="active" href="/liuyao">六爻</a>

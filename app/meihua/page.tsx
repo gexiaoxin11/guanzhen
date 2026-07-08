@@ -103,7 +103,7 @@ export default function MeihuaPage() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/"><span>观真</span><small>Truthful Hexagram</small></a>
+        <a className="brand" href="/"><span>观真</span></a>
         <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a className="active" href="/meihua">梅花易数</a></nav>
         <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
@@ -124,7 +124,7 @@ export default function MeihuaPage() {
               ))}
             </div>
           </div>
-          <textarea id="meihua-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="心中所疑，尽可在此诉说…" rows={2} />
+          <textarea id="meihua-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="请输入你想问的具体问题..." rows={2} />
         </section>
 
         <form className="ziwei-form" onSubmit={handleSubmit}>
