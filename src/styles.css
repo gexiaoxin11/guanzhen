@@ -72,7 +72,6 @@ a {
   z-index: 30;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 64px;
   padding: 0 24px;
   border-bottom: 1px solid rgba(51, 51, 51, 0.08);
@@ -84,7 +83,8 @@ a {
   display: inline-flex;
   align-items: baseline;
   gap: 10px;
-  min-width: 174px;
+  flex-shrink: 0;
+  z-index: 2;
 }
 
 .brand span {
@@ -101,12 +101,16 @@ a {
 }
 
 .desktop-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 18px;
   color: rgba(51, 51, 51, 0.64);
-  font-size: 13px;
+  font-size: 16px;
+  white-space: nowrap;
 }
 
 .desktop-nav a {
@@ -462,7 +466,7 @@ a {
 .form-card h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -477,7 +481,7 @@ a {
   display: block;
   margin: 0;
   color: var(--ink);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -573,6 +577,42 @@ input:focus {
   border-color: var(--gold);
 }
 
+/* ─── 分段选择器 ─── */
+.mode-segment {
+  display: inline-flex;
+  border: 1px solid rgba(51, 51, 51, 0.14);
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.segment-btn {
+  padding: 7px 16px;
+  border: 0;
+  border-right: 1px solid rgba(51, 51, 51, 0.1);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.segment-btn:last-child {
+  border-right: 0;
+}
+
+.segment-btn:hover {
+  background: rgba(212, 65, 21, 0.06);
+  color: var(--ink);
+}
+
+.segment-btn.selected {
+  background: var(--red);
+  color: #ffffff;
+}
+
 .control-row {
   display: flex;
   align-items: center;
@@ -583,7 +623,7 @@ input:focus {
 .control-row h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -934,6 +974,7 @@ input:focus {
   border-bottom: 1px solid rgba(51, 51, 51, 0.08);
   padding: 0 8px;
 }
+
 
 .yao-row:last-child {
   border-bottom: 0;
@@ -1518,7 +1559,12 @@ input:focus {
 
 @media (max-width: 1020px) {
   .desktop-nav {
-    gap: 8px;
+    gap: 10px;
+    font-size: 16px;
+  }
+
+  .topbar {
+    padding: 0 14px;
   }
   
   .control-row {
@@ -1528,12 +1574,16 @@ input:focus {
 
 @media (max-width: 720px) {
   .app-shell {
-    padding-bottom: 76px;
+    padding-bottom: 0;
   }
 
   .topbar {
-    height: 58px;
-    padding: 0 16px;
+    height: auto;
+    min-height: 58px;
+    padding: 8px 10px;
+    gap: 6px;
+    flex-wrap: wrap;
+    overflow: visible;
   }
 
   .brand {
@@ -1541,11 +1591,47 @@ input:focus {
   }
 
   .brand span {
-    font-size: 23px;
+    font-size: 20px;
   }
 
-  .brand small,
-  .desktop-nav,
+  .brand {
+    flex-shrink: 0;
+  }
+
+  .topbar .brand {
+    margin-right: 0;
+  }
+
+  .brand small {
+    display: none;
+  }
+
+  .desktop-nav {
+    position: static;
+    transform: none;
+    flex: 1 1 100%;
+    order: 10;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 0 0;
+    font-size: 16px;
+    min-width: 0;
+  }
+
+  .desktop-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .desktop-nav a {
+    font-size: 15px;
+    padding: 4px 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .profile-pill {
     display: none;
   }
@@ -1651,7 +1737,103 @@ input:focus {
   }
 
   .mobile-nav {
-    display: grid;
+    display: none;
+  }
+
+  .yao-row {
+    font-size: 11px;
+  }
+
+  /* ─── 移动端组件适配 ─── */
+  .form-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .control-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .control-row h2 {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .mode-segment {
+    flex: 1 1 100%;
+  }
+
+  .segment-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .time-editor {
+    display: flex;
+    margin-left: 0;
+    width: 100%;
+    order: 10;
+  }
+
+  .time-editor input {
+    width: 100%;
+    min-height: 42px;
+    font-size: 16px;
+    padding-right: 60px;
+  }
+
+  .time-editor .time-now-btn {
+    height: 30px;
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  textarea {
+    font-size: 16px;
+    padding: 11px 13px;
+  }
+
+  input {
+    font-size: 16px;
+    min-height: 42px;
+  }
+
+  .topic-row {
+    gap: 4px;
+  }
+
+  .topic {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .shake-zone {
+    gap: 12px;
+    padding-top: 12px;
+  }
+
+  .cast-progress {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .question-card {
+    padding: 16px 14px;
+  }
+
+  /* bazi 页面适配 */
+  .bazi-form-card {
+    padding: 14px !important;
+  }
+
+  /* 统一模块内边距 */
+  .ziwei-form {
+    padding: 14px;
+    margin: 14px 0;
   }
 }
 
@@ -1876,7 +2058,34 @@ input:focus {
   .ziwei-palace-stem-branch { font-size: 9px; }
   .ziwei-palace-decadal { font-size: 8px; }
   .ziwei-star { font-size: 9px; }
-  .ziwei-form-row { flex-direction: column; }
+  .ziwei-form-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ziwei-form-row label {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  .ziwei-form-row label span {
+    font-size: 12px;
+  }
+
+  .ziwei-form-row input,
+  .ziwei-form-row select {
+    min-height: 40px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ziwei-submit {
+    flex: 1 1 100%;
+    min-height: 42px;
+    font-size: 15px;
+    margin-top: 4px;
+  }
   .ziwei-center-title { font-size: 14px; }
   .ziwei-center { min-height: 90px; }
   .ziwei-tabs { flex-wrap: wrap; }
@@ -2704,6 +2913,12 @@ input:focus {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
   margin: 14px 0;
 }
+
+/* ─── 梅花易数 ─── */
+.meihua-hex-grid {
+  display: grid;
+}
+
 .daliuren-grid-cell {
   background: var(--surface-strong); border: 1px solid var(--ink-faint);
   border-radius: 8px; padding: 8px; font-size: 12px; text-align: center;

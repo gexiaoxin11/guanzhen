@@ -15,7 +15,6 @@ export default function HomePage() {
           
         </a>
         <nav className="desktop-nav"><a href="/" className="active">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
-        <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
       </header>
 
       <main className="main-flow">
@@ -26,6 +25,26 @@ export default function HomePage() {
             以《增删卜易》《卜筮正宗》《紫微斗数全书》等古典文献为根基，
             结合 AI 大模型，引经据典，专业克制。
           </p>
+          <a
+            href="/activate"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 320,
+              height: 48,
+              marginTop: 28,
+              borderRadius: 13,
+              background: "var(--red)",
+              color: "#fff",
+              fontSize: 16,
+              fontWeight: 600,
+              textDecoration: "none",
+              letterSpacing: "0.04em",
+            }}
+          >
+            激活密钥 / 我的权限
+          </a>
         </section>
 
         <footer style={{ textAlign: "center", color: "var(--ink-soft)", fontSize: 12, marginTop: 60, paddingBottom: 40 }}>

@@ -105,7 +105,7 @@ export default function MeihuaPage() {
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
         <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a className="active" href="/meihua">梅花易数</a></nav>
-        <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
+        
       </header>
 
       <div className="main-flow">
@@ -205,7 +205,7 @@ export default function MeihuaPage() {
             )}
 
             {/* 三卦卡片 */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
+            <div className="meihua-hex-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 20 }}>
               {result.mainHexagram && (
                 <HexagramCard title="本卦" hex={result.mainHexagram as any} movingLine={result.movingLine as number | undefined} />
               )}
@@ -259,7 +259,7 @@ export default function MeihuaPage() {
 
             {/* 错卦综卦 */}
             {(result.oppositeHexagram || result.reversedHexagram) && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+              <div className="meihua-hex-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
                 {result.oppositeHexagram && (
                   <HexagramCard title="错卦" hex={result.oppositeHexagram as any} />
                 )}

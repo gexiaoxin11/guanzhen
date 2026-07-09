@@ -469,9 +469,9 @@ export function App() {
                   />
                 <button type="button" className="time-now-btn" onClick={setCurrentBeijingTime}>当前时间</button>
               </div>
-              <div className="mode-group">
-                {(Object.keys(modeCopy) as CastMode[]).map((key) => (
-                  <button type="button" className={mode === key ? "mode-tab selected" : "mode-tab"} key={key} onClick={() => setCastMode(key)}>
+              <div className="mode-segment">
+                {(Object.keys(modeCopy) as CastMode[]).map((key, idx) => (
+                  <button type="button" className={mode === key ? "segment-btn selected" : "segment-btn"} key={key} onClick={() => setCastMode(key)}>
                     {modeCopy[key].title}
                   </button>
                 ))}
@@ -585,7 +585,7 @@ function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | 
           >{item}</a>
         ))}
       </nav>
-      <a className="profile-pill" href="/activate">激活密钥 / 我的权限</a>
+      
     </header>
   );
 }
