@@ -632,9 +632,9 @@ function AuthPanel({
 function CoinOrbit({ active, values }: { active: boolean; values: YaoValue[] }) {
   return (
     <div className={active ? "coin-orbit active" : "coin-orbit"}>
-      <span />
-      <span />
-      <span />
+      <img src="/coins/coin-front.png" alt="铜钱" />
+      <img src="/coins/coin-front.png" alt="铜钱" />
+      <img src="/coins/coin-front.png" alt="铜钱" />
       <div>{values.length === 6 ? "已成卦" : `待摇${lineNames[values.length]}爻`}</div>
     </div>
   );

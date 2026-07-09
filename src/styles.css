@@ -708,23 +708,23 @@ input:focus {
   font-size: 12px;
 }
 
-.coin-orbit span {
+.coin-orbit img {
   position: absolute;
-  width: 34px;
-  height: 34px;
-  border: 2px solid rgba(212, 65, 21, 0.7);
+  width: 40px;
+  height: 40px;
+  border: none;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff7d7 0 28%, #d8aa42 29% 100%);
-  box-shadow: 0 8px 22px rgba(212, 65, 21, 0.28);
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(212, 65, 21, 0.25);
 }
 
-.coin-orbit span:nth-child(1) { transform: translate(-38px, -28px); }
-.coin-orbit span:nth-child(2) { transform: translate(38px, -20px); }
-.coin-orbit span:nth-child(3) { transform: translate(0, 42px); }
+.coin-orbit img:nth-child(1) { transform: translate(-38px, -28px); }
+.coin-orbit img:nth-child(2) { transform: translate(38px, -20px); }
+.coin-orbit img:nth-child(3) { transform: translate(0, 42px); }
 
-.coin-orbit.active span:nth-child(1) { animation: coin-one 0.36s linear infinite; }
-.coin-orbit.active span:nth-child(2) { animation: coin-two 0.32s linear infinite; }
-.coin-orbit.active span:nth-child(3) { animation: coin-three 0.4s linear infinite; }
+.coin-orbit.active img:nth-child(1) { animation: coin-one 0.36s linear infinite; }
+.coin-orbit.active img:nth-child(2) { animation: coin-two 0.32s linear infinite; }
+.coin-orbit.active img:nth-child(3) { animation: coin-three 0.4s linear infinite; }
 
 .cast-progress {
   display: grid;
