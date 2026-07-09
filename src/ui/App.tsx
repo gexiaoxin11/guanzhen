@@ -485,7 +485,7 @@ export function App() {
                 <button
                   type="button"
                   className="dark-action"
-                  style={{ background: "var(--red)" }}
+                  style={{ background: "var(--red)", width: 320 }}
                   onClick={() => {
                     if (input.lineValues.length === 6) {
                       setConfirmReset(true);

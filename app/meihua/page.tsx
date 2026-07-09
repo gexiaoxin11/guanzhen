@@ -316,24 +316,8 @@ export default function MeihuaPage() {
 
             {/* AI 解读 */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, paddingTop: 16 }}>
-              <button
-                onClick={handleAIInterpret}
-                disabled={aiLoading}
-                style={{
-                  padding: "12px 40px",
-                  border: "none",
-                  borderRadius: 12,
-                  background: aiLoading ? "var(--ink-faint)" : "var(--gold)",
-                  color: "#fff",
-                  fontSize: 16,
-                  fontWeight: 600,
-                  letterSpacing: "0.04em",
-                  cursor: aiLoading ? "not-allowed" : "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: "0 2px 12px rgba(212,65,21,0.25)",
-                }}
-              >
-                {aiLoading ? "解读中…" : "AI 解读"}
+              <button onClick={handleAIInterpret} disabled={aiLoading} className="bazi-ai-btn">
+                {aiLoading ? "解读中…" : "深度解读"}
               </button>
 
               {aiError && (
@@ -356,7 +340,7 @@ export default function MeihuaPage() {
                     fontSize: 15,
                     fontWeight: 600,
                     letterSpacing: "0.04em",
-                  }}>AI 解读</div>
+                  }}>深度解读</div>
                   <div style={{
                     padding: "18px 20px",
                     fontSize: 14,

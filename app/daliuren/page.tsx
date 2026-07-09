@@ -4,6 +4,7 @@ import { runDaliuren, type DaliurenInput, type DaliurenOutput } from "../../src/
 import { useState } from "react";
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
+import CitySelect from "../CitySelect";
 
 // ─── 辅助函数 ───
 
@@ -15,7 +16,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 export default function DaliurenPage() {
   const [birthDate, setBirthDate] = useState("1990-01-01");
   const [timeIndex, setTimeIndex] = useState(0);
-  const [timezone, setTimezone] = useState("Asia/Shanghai");
+  const [timezone, setTimezone] = useState("");
   const [question, setQuestion] = useState("");
 
   const TOPIC_LABELS: Record<string, string> = {
@@ -37,7 +38,7 @@ export default function DaliurenPage() {
     setLoading(true);
     try {
       const h = HOUR_STARTS[timeIndex] || 0;
-      const input: DaliurenInput = { date: birthDate, hour: h, minute: 0, timezone, question: question || undefined };
+      const input: DaliurenInput = { date: birthDate, hour: h, minute: 0, timezone: timezone || "Asia/Shanghai", question: question || undefined };
       const output = await runDaliuren(input);
       setResult(output);
     } catch (err: unknown) {
@@ -101,7 +102,7 @@ export default function DaliurenPage() {
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
-            <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
+            <label><span>出生地</span><CitySelect value={timezone} onChange={setTimezone} /></label>
             <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
           </div>
           {error && <p className="ziwei-error">{error}</p>}

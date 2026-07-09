@@ -326,7 +326,7 @@ export function ZiweiApp() {
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
-            <label><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value)}><option value="男">男</option><option value="女">女</option></select></label>
+            <label style={{ flex: "0 0 80px" }}><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value)}><option value="男">男</option><option value="女">女</option></select></label>
             <button type="submit" className="ziwei-submit">开始排盘</button>
           </div>
           {error && <p className="ziwei-error">{error}</p>}
@@ -855,7 +855,7 @@ export function ZiweiApp() {
                     onClick={handleAIAnalysis}
                     disabled={aiLoading}
                   >
-                    {aiLoading ? "分析中..." : "🧠 开始批注"}
+                    {aiLoading ? "分析中..." : "开始批注"}
                   </button>
                   {aiReading && (
                     <div className="ziwei-ai-result">

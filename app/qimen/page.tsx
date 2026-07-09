@@ -4,6 +4,7 @@ import { useState } from "react";
 import { runQimen, type QimenInput, type QimenOutput } from "../../src/lib/taibu";
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
+import CitySelect from "../CitySelect";
 
 const PALACE_LAYOUT = [4, 9, 2, 3, 5, 7, 8, 1, 6];
 
@@ -11,7 +12,7 @@ export default function QimenPage() {
   const [birthDate, setBirthDate] = useState("1990-01-01");
   const [timeIndex, setTimeIndex] = useState(0);
   const [gender, setGender] = useState("男");
-  const [timezone, setTimezone] = useState("Asia/Shanghai");
+  const [timezone, setTimezone] = useState("");
   const [question, setQuestion] = useState("");
 
   const TOPIC_LABELS: Record<string, string> = {
@@ -19,7 +20,6 @@ export default function QimenPage() {
     health: "健康", lost: "失物", study: "学业", lawsuit: "官非",
   };
   const [topic, setTopic] = useState<string>("general");
-  const [panType, setPanType] = useState<"zhuan">("zhuan");
   const [juMethod, setJuMethod] = useState<"chaibu" | "maoshan">("chaibu");
   const [result, setResult] = useState<QimenOutput | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -35,9 +35,8 @@ export default function QimenPage() {
       day: d,
       hour: h,
       minute: 0,
-      timezone,
+      timezone: timezone || "Asia/Shanghai",
       question: question || undefined,
-      panType,
       juMethod,
     };
     const output = await runQimen(input);
@@ -104,9 +103,8 @@ export default function QimenPage() {
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
-            <label><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value)}><option value="男">男</option><option value="女">女</option></select></label>
-            <label><span>时区</span><input type="text" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="Asia/Shanghai" /></label>
-            <label><span>排盘方式</span><select value={panType} onChange={(e) => setPanType(e.target.value as "zhuan")}><option value="zhuan">转盘</option></select></label>
+            <label style={{ flex: "0 0 80px" }}><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value)}><option value="男">男</option><option value="女">女</option></select></label>
+            <label><span>出生地</span><CitySelect value={timezone} onChange={setTimezone} /></label>
             <label><span>局法</span><select value={juMethod} onChange={(e) => setJuMethod(e.target.value as "chaibu" | "maoshan")}><option value="chaibu">拆补</option><option value="maoshan">茅山</option></select></label>
             <button type="submit" className="ziwei-submit">开始排盘</button>
           </div>

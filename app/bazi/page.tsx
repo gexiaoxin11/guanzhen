@@ -145,7 +145,7 @@ export default function BaziPage() {
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
             <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
-            <label><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value as Gender)}><option value="male">男</option><option value="female">女</option></select></label>
+            <label style={{ flex: "0 0 80px" }}><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value as Gender)}><option value="male">男</option><option value="female">女</option></select></label>
             <label><span>历法</span><select value={calendarType} onChange={(e) => setCalendarType(e.target.value as CalendarType)}><option value="solar">公历</option><option value="lunar">农历</option></select></label>
             {calendarType === "lunar" && <label><span>闰月</span><select value={isLeapMonth ? "1" : "0"} onChange={(e) => setIsLeapMonth(e.target.value === "1")}><option value="0">否</option><option value="1">是</option></select></label>}
             <button type="submit" className="ziwei-submit" disabled={loading}>{loading ? "排盘中…" : "开始排盘"}</button>
@@ -397,14 +397,14 @@ export default function BaziPage() {
 
             <section className="bazi-ai-section">
               <button className="bazi-ai-btn" onClick={handleAIReading} disabled={aiLoading}>
-                {aiLoading ? "AI 解读中…" : "AI 解读"}
+                {aiLoading ? "解读中…" : "深度解读"}
               </button>
 
               {aiError && <p className="bazi-error">{aiError}</p>}
 
               {aiResult && (
                 <div className="bazi-ai-result">
-                  <div className="bazi-ai-result-header">AI 解读</div>
+                  <div className="bazi-ai-result-header">深度解读</div>
                   <div className="bazi-ai-result-body">{aiResult}</div>
                 </div>
               )}
@@ -457,7 +457,7 @@ export default function BaziPage() {
         .bazi-field input,
         .bazi-field select {
           min-height: 40px;
-          padding: 0 12px;
+          padding: 0 14px;
           border: 1px solid rgba(51, 51, 51, 0.14);
           border-radius: 10px;
           background: #F2EDE5;
@@ -731,24 +731,31 @@ export default function BaziPage() {
           padding: 20px 0 10px;
         }
         .bazi-ai-btn {
-          padding: 12px 40px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%; min-height: 46px; padding: 10px 28px;
           border: none;
           border-radius: 12px;
-          background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+          background: var(--red);
           color: #fff;
           font-size: 16px;
           font-weight: 600;
+          letter-spacing: 0.04em;
           cursor: pointer;
           transition: all 0.2s;
-          box-shadow: 0 2px 12px rgba(212, 65, 21, 0.25);
+          box-shadow: 0 2px 10px rgba(212, 65, 21, 0.22);
         }
         .bazi-ai-btn:hover:not(:disabled) {
+          filter: brightness(0.9);
           transform: translateY(-1px);
-          box-shadow: 0 4px 18px rgba(212, 65, 21, 0.35);
+          box-shadow: 0 4px 16px rgba(212, 65, 21, 0.3);
         }
         .bazi-ai-btn:disabled {
-          opacity: 0.6;
+          opacity: 0.45;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
         }
         .bazi-ai-result {
           width: 100%;
