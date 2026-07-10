@@ -1,7 +1,8 @@
 "use client";
 
 import { runDaliuren, type DaliurenInput, type DaliurenOutput } from "../../src/lib/taibu";
-import { useState } from "react";
+import { analyzeDaliuren, analyzeKeChuanLeiXiang, searchBiFaFu, type KeChuanLeiXiang, type BiFaFuResult } from "../../src/domain/daliurenAnalysis";
+import { useState, useMemo } from "react";
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 import CitySelect from "../CitySelect";
@@ -28,6 +29,9 @@ export default function DaliurenPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [aiResult, setAiResult] = useState("");
+  const [daliurenAnalysis, setDaliurenAnalysis] = useState<ReturnType<typeof analyzeDaliuren> | null>(null);
+  const [keChuanLeiXiang, setKeChuanLeiXiang] = useState<KeChuanLeiXiang[]>([]);
+  const [biFaFu, setBiFaFu] = useState<BiFaFuResult[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"tianDiPan" | "siKe" | "sanChuan" | "shenSha" | "keTi" | "dunGan">("tianDiPan");
 
@@ -41,6 +45,12 @@ export default function DaliurenPage() {
       const input: DaliurenInput = { date: birthDate, hour: h, minute: 0, timezone: timezone || "Asia/Shanghai", question: question || undefined };
       const output = await runDaliuren(input);
       setResult(output);
+      setDaliurenAnalysis(analyzeDaliuren(output));
+      setKeChuanLeiXiang(analyzeKeChuanLeiXiang(output));
+      try {
+        const allGens = [...(output.sanChuan?.chu || []), ...(output.sanChuan?.zhong || []), ...(output.sanChuan?.mo || [])].filter((g: any) => typeof g === 'string' && g.length <= 4);
+        setBiFaFu(searchBiFaFu(output.keName || '', output.sanChuan, allGens));
+      } catch { setBiFaFu([]); }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "排盘失败，请检查输入");
     } finally {
@@ -72,7 +82,7 @@ export default function DaliurenPage() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a className="active" href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a className="active" href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
         
       </header>
 
@@ -224,6 +234,93 @@ export default function DaliurenPage() {
             {/* 遁干 */}
             {activeTab === "dunGan" && result.dunGan && (
               <DunGanView dunGan={result.dunGan} />
+            )}
+
+            {daliurenAnalysis && (
+              <div style={{
+                marginTop: 20, padding: "20px 22px", borderRadius: 14,
+                border: "1px solid rgba(51,51,51,0.08)", background: "var(--surface)",
+              }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: 16, fontWeight: 600, color: "var(--ink)" }}>
+                  课体分析 · {daliurenAnalysis.verdict}
+                </h3>
+                <div style={{ display: "grid", gap: 14 }}>
+
+                  {/* 课体 */}
+                  <div>
+                    <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 6 }}>课式</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{daliurenAnalysis.keName}</div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+                      {daliurenAnalysis.ketiAnalysis.map((k: any, i: number) => {
+                        const catColor = k.category === "吉" ? "#298747" : k.category === "凶" ? "#D44115" : k.category === "变" ? "#B07B2B" : "var(--ink-soft)";
+                        const catBg = k.category === "吉" ? "rgba(41,135,71,0.08)" : k.category === "凶" ? "rgba(212,65,21,0.08)" : k.category === "变" ? "rgba(176,123,43,0.08)" : "rgba(51,51,51,0.05)";
+                        return (
+                          <span
+                            key={i}
+                            title={k.explain}
+                            style={{
+                              fontSize: 11, padding: "2px 8px", borderRadius: 4,
+                              background: catBg, color: catColor,
+                              border: `1px solid ${catColor}33`,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {k.category === "吉" && "🟢 "}
+                            {k.category === "凶" && "🔴 "}
+                            {k.category === "变" && "🟡 "}
+                            {k.name}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 四课概要 */}
+                  <div>
+                    <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 6 }}>四课概要</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, fontSize: 12 }}>
+                      {daliurenAnalysis.sikeAnalysis.map((k: any) => (
+                        <div key={k.order} style={{
+                          padding: "8px", borderRadius: 8, textAlign: "center",
+                          background: k.generalNature === "吉将" ? "rgba(41,135,71,0.05)" : k.generalNature === "凶将" ? "rgba(212,65,21,0.05)" : "rgba(51,51,51,0.03)",
+                        }}>
+                          <div style={{ color: "var(--ink-soft)", fontSize: 10 }}>{k.order}</div>
+                          <div style={{ fontWeight: 600, color: "var(--ink)" }}>{k.upper}·{k.lower}</div>
+                          <div style={{ fontSize: 10, color: k.generalNature === "吉将" ? "#298747" : k.generalNature === "凶将" ? "#D44115" : "var(--ink-soft)" }}>{k.general}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 三传走势 */}
+                  <div>
+                    <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 6 }}>三传走势</div>
+                    <div style={{ display: "flex", gap: 8, fontSize: 12 }}>
+                      {daliurenAnalysis.sanchuanAnalysis.map((s: any, i: number) => (
+                        <div key={i} style={{
+                          flex: 1, padding: "10px", borderRadius: 8, textAlign: "center",
+                          background: s.generalNature === "吉将" ? "rgba(41,135,71,0.06)" : s.generalNature === "凶将" ? "rgba(212,65,21,0.06)" : "rgba(51,51,51,0.03)",
+                          border: `2px solid ${s.generalNature === "吉将" ? "rgba(41,135,71,0.15)" : s.generalNature === "凶将" ? "rgba(212,65,21,0.15)" : "rgba(51,51,51,0.08)"}`,
+                          ...(i === 2 ? { borderWidth: "2px", borderStyle: "solid" } : {}),
+                        }}>
+                          <div style={{ fontSize: 10, color: "var(--ink-soft)" }}>{s.order}</div>
+                          <div style={{ fontWeight: 600, fontSize: 15, color: "var(--ink)" }}>{s.branch}</div>
+                          <div style={{ fontSize: 10, color: "var(--ink-soft)" }}>{s.general} · {s.liuqin}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 吉凶统计 */}
+                  <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
+                    <span style={{ color: "#298747" }}>吉将 {daliurenAnalysis.goodGeneralCount}</span>
+                    <span style={{ color: "#D44115" }}>凶将 {daliurenAnalysis.badGeneralCount}</span>
+                    <span style={{ color: "var(--ink-soft)" }}>
+                      {daliurenAnalysis.lastIsGood ? "末传为吉将，结局向好" : "末传非吉将，需谨慎收尾"}
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* AI 解读 */}

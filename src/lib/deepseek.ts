@@ -48,12 +48,33 @@ export async function generateReading(payload: ReadingRequest) {
     return `【${CHART_TYPE_NAMES[chartType] || "排盘"}结果】\n\nAI 解读服务暂未配置，请确保已设置 DEEPSEEK_API_KEY 环境变量。\n\n排盘数据已生成，您可以根据以下数据进行自行分析：\n${JSON.stringify(chartData, null, 2)}`;
   }
 
-  // Search relevant document context
-  const docContext = searchDocuments(payload.question, 5);
+  // Search relevant document context (mention-aware)
+  const mentionMap: Record<string, string[]> = {
+    "@八字": ["八字", "四柱", "十神", "日主", "大运", "流年", "格局", "用神", "喜忌", "渊海子平", "三命通会", "滴天髓"],
+    "@紫微": ["紫微", "天府", "天机", "太阳", "武曲", "天同", "廉贞", "四化", "命盘", "十二宫", "紫微斗数"],
+    "@六爻": ["六爻", "卦象", "世应", "用神", "伏神", "动变", "爻辞", "纳甲", "应期", "增删卜易", "卜筮正宗", "易隐", "火珠林"],
+    "@奇门": ["奇门", "八门", "九星", "值符", "值使", "三奇六仪", "遁甲", "烟波钓叟歌"],
+    "@六壬": ["六壬", "四课", "三传", "天将", "贵人", "月将", "课体", "六壬大全"],
+    "@梅花": ["梅花", "体用", "互卦", "变卦", "生克", "外应", "梅花易数"],
+  };
+  
+  let searchQuery = payload.question;
+  const usedMentions: string[] = [];
+  for (const [trigger, keywords] of Object.entries(mentionMap)) {
+    if (payload.question.includes(trigger)) {
+      searchQuery += " " + keywords.join(" ");
+      usedMentions.push(trigger);
+    }
+  }
+  
+  const docContext = searchDocuments(searchQuery, usedMentions.length > 0 ? 8 : 5);
   const retrievedContext = payload.retrievedContext ?? [];
   if (docContext.length > 0) {
+    const mentionNote = usedMentions.length > 0 
+      ? `\n（用户通过 ${usedMentions.join("、")} 明确请求引用知识库内容，请优先从以下古籍中援引相关原文佐证判断。）`
+      : "";
     retrievedContext.push(
-      "【古籍参考】以下为相关古籍原文片段，请据此援引佐证你的判断：\n" +
+      "【古籍参考】以下为相关古籍原文片段，请据此援引佐证你的判断：" + mentionNote + "\n" +
         docContext.map((doc) => `《${doc.title}》：${doc.content}`).join("\n\n")
     );
   }

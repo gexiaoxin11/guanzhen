@@ -1,7 +1,8 @@
 "use client";
 
 import { runMeihua, type MeihuaInput, type MeihuaOutput } from "../../src/lib/taibu";
-import { useState } from "react";
+import { analyzeMeihua } from "../../src/domain/meihuaAnalysis";
+import { useState, useMemo } from "react";
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 
@@ -20,6 +21,7 @@ export default function MeihuaPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiError, setAiError] = useState("");
+  const [meihuaAnalysis, setMeihuaAnalysis] = useState<ReturnType<typeof analyzeMeihua> | null>(null);
 
   const TOPIC_LABELS: Record<string, string> = {
     general: "综合", career: "事业", wealth: "财运", love: "感情",
@@ -104,7 +106,7 @@ export default function MeihuaPage() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a className="active" href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a className="active" href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
         
       </header>
 
@@ -166,6 +168,27 @@ export default function MeihuaPage() {
             boxShadow: "var(--shadow)",
           }}>
             <h2 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 700, color: "var(--ink)" }}>起卦结果</h2>
+            {meihuaAnalysis && (
+              <div style={{
+                padding: "14px 18px", marginBottom: 18, borderRadius: 12,
+                background: meihuaAnalysis.outcome === "吉" ? "rgba(41,135,71,0.06)" : meihuaAnalysis.outcome === "凶" ? "rgba(212,65,21,0.06)" : "rgba(212,160,23,0.06)",
+                border: `1px solid ${meihuaAnalysis.outcome === "吉" ? "rgba(41,135,71,0.2)" : meihuaAnalysis.outcome === "凶" ? "rgba(212,65,21,0.2)" : "rgba(212,160,23,0.2)"}`,
+              }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 4 }}>体用生克 · {meihuaAnalysis.bodyTrigram.name}({meihuaAnalysis.bodyTrigram.element}) {meihuaAnalysis.relation} {meihuaAnalysis.useTrigram.name}({meihuaAnalysis.useTrigram.element})</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)", lineHeight: 1.6 }}>{meihuaAnalysis.tiyongDetail}</div>
+                  </div>
+                </div>
+                {meihuaAnalysis.timings.length > 0 && (
+                  <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {meihuaAnalysis.timings.map((t, i) => (
+                      <span key={i} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: "rgba(51,51,51,0.06)", color: "var(--ink-soft)" }}>{t.phase}：{t.trigger} — {t.summary}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {result.question && (
               <p style={{ margin: "0 0 18px", fontSize: 14, color: "var(--ink-soft)" }}>问：{result.question}</p>
             )}

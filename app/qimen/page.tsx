@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { runQimen, type QimenInput, type QimenOutput } from "../../src/lib/taibu";
+import { analyzeQimen, recommendYongShenDirection, analyzeShiGanKeYing, analyzeStarSeasonalStrength, analyzeDoorRelations, type YongShenDirection, type ShiGanKeYing, type StarStrengthReport, type DoorRelation } from "../../src/domain/qimenAnalysis";
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 import CitySelect from "../CitySelect";
@@ -24,6 +25,11 @@ export default function QimenPage() {
   const [result, setResult] = useState<QimenOutput | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<string | null>(null);
+  const [qimenAnalysis, setQimenAnalysis] = useState<ReturnType<typeof analyzeQimen> | null>(null);
+  const [yongShenDir, setYongShenDir] = useState<YongShenDirection[]>([]);
+  const [shiGanKeYingData, setShiGanKeYingData] = useState<ShiGanKeYing[]>([]);
+  const [starStrengthData, setStarStrengthData] = useState<StarStrengthReport[]>([]);
+  const [doorRelations, setDoorRelations] = useState<DoorRelation[]>([]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +47,9 @@ export default function QimenPage() {
     };
     const output = await runQimen(input);
     setResult(output);
+    setQimenAnalysis(analyzeQimen(output));
+    setYongShenDir(recommendYongShenDirection(output, topic));
+    setShiGanKeYingData(analyzeShiGanKeYing(output));
     setAiResult(null);
   }
 
@@ -75,7 +84,7 @@ export default function QimenPage() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a className="active" href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a className="active" href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
         
       </header>
 
@@ -208,6 +217,150 @@ export default function QimenPage() {
                 );
               })}
             </div>
+
+            {qimenAnalysis && (
+              <div className="qimen-analysis" style={{
+                marginTop: 20, padding: "20px 22px", borderRadius: 14,
+                border: "1px solid rgba(51,51,51,0.08)", background: "var(--surface)",
+              }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: 16, fontWeight: 600, color: "var(--ink)" }}>
+                  局象分析 · {qimenAnalysis.overall}
+                </h3>
+
+                <div style={{ display: "grid", gap: 12 }}>
+                  {/* 值符值使 */}
+                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
+                    <span style={{ color: "var(--ink-soft)" }}>值符：<strong style={{ color: "var(--ink)" }}>{qimenAnalysis.zhiFu.star}</strong>（{qimenAnalysis.zhiFu.palace}）— {qimenAnalysis.zhiFu.meaning.slice(0, 40)}</span>
+                    <span style={{ color: "var(--ink-soft)" }}>值使：<strong style={{ color: "var(--ink)" }}>{qimenAnalysis.zhiShi.gate}</strong>（{qimenAnalysis.zhiShi.palace}）— {qimenAnalysis.zhiShi.meaning.slice(0, 40)}</span>
+                  </div>
+
+                  {/* 吉凶门 */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 12 }}>
+                    <span style={{ color: "var(--ink-soft)" }}>吉门：</span>
+                    {qimenAnalysis.goodDoors.map((d: string) => (
+                      <span key={d} style={{ color: "#298747", fontWeight: 600 }}>{d}</span>
+                    ))}
+                    <span style={{ margin: "0 4px", color: "var(--ink-faint)" }}>|</span>
+                    <span style={{ color: "var(--ink-soft)" }}>凶门：</span>
+                    {qimenAnalysis.badDoors.map((d: string) => (
+                      <span key={d} style={{ color: "#D44115", fontWeight: 600 }}>{d}</span>
+                    ))}
+                  </div>
+
+                  {/* 八门详解 */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 6 }}>
+                    {qimenAnalysis.palaceAnalysis.slice(0, 8).map((p: any) => (
+                      <div key={p.palace} style={{
+                        padding: "8px 10px", borderRadius: 8, fontSize: 11,
+                        background: p.doorGood ? "rgba(41,135,71,0.04)" : "rgba(212,65,21,0.04)",
+                        border: `1px solid ${p.doorGood ? "rgba(41,135,71,0.1)" : "rgba(212,65,21,0.1)"}`,
+                      }}>
+                        <div style={{ fontWeight: 600, color: "var(--ink)" }}>{p.palace} · {p.door}</div>
+                        <div style={{ color: "var(--ink-soft)" }}>{p.star} · {p.deity}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 全局格局 */}
+                  {qimenAnalysis.globalFormations.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 12 }}>
+                      <span style={{ color: "var(--ink-soft)" }}>格局：</span>
+                      {qimenAnalysis.globalFormations.map((f: any) => (
+                        <span key={f.name} style={{
+                          padding: "2px 8px", borderRadius: 4, fontWeight: 500,
+                          color: f.isGood ? "#298747" : f.isBad ? "#D44115" : "var(--ink-soft)",
+                          background: f.isGood ? "rgba(41,135,71,0.08)" : f.isBad ? "rgba(212,65,21,0.08)" : "rgba(51,51,51,0.05)",
+                        }} title={f.meaning}>{f.name}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            
+            {yongShenDir.length > 0 && (
+              <InfoBlock title="用神方位推荐">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {yongShenDir.map((ys, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                      borderRadius: 10, background: "rgba(212,65,21,0.04)",
+                      border: "1px solid rgba(212,65,21,0.1)",
+                    }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "var(--gold)", minWidth: 70 }}>{ys.yongShen}</span>
+                      <span style={{ fontSize: 13, color: "var(--ink-soft)", minWidth: 60 }}>落{ys.palace}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>→ {ys.recommendation}</span>
+                      {ys.isKongWang && <span style={{ fontSize: 11, color: "#888", background: "rgba(0,0,0,0.05)", padding: "2px 8px", borderRadius: 20 }}>空亡</span>}
+                      {ys.isYiMa && <span style={{ fontSize: 11, color: "var(--blue)", background: "rgba(49,121,148,0.1)", padding: "2px 8px", borderRadius: 20 }}>驿马</span>}
+                    </div>
+                  ))}
+                </div>
+              </InfoBlock>
+            )}
+
+
+            {shiGanKeYingData.length > 0 && (
+              <InfoBlock title="时干克应">
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {shiGanKeYingData.slice(0, 3).map((sk, i) => (
+                    <div key={i} style={{
+                      padding: "8px 12px", borderRadius: 8,
+                      background: "rgba(51,51,51,0.03)", fontSize: 13, color: "var(--ink)",
+                      lineHeight: 1.6,
+                    }}>
+                      <strong>时干{sk.stem}</strong> 落{sk.stemPalace} → {sk.targetPalace}（{sk.relation}）{sk.meaning}
+                    </div>
+                  ))}
+                </div>
+              </InfoBlock>
+            )}
+
+            
+            {starStrengthData.length > 0 && (
+              <InfoBlock title="九星旺衰">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 6 }}>
+                  {starStrengthData.map((ss: any, i: number) => (
+                    <div key={i} style={{
+                      padding: "8px 12px", borderRadius: 8,
+                      background: ss.currentStrength === "旺" || ss.currentStrength === "相" ? "rgba(212,65,21,0.05)" : ss.currentStrength === "死" || ss.currentStrength === "囚" ? "rgba(51,51,51,0.03)" : "rgba(51,51,51,0.02)",
+                      border: "1px solid rgba(51,51,51,0.06)",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{ss.star}</span>
+                        <span style={{
+                          fontSize: 12, fontWeight: 600, padding: "1px 8px", borderRadius: 20,
+                          background: ss.currentStrength === "旺" ? "rgba(212,65,21,0.12)" : ss.currentStrength === "相" ? "rgba(46,142,71,0.1)" : ss.currentStrength === "休" ? "rgba(49,121,148,0.1)" : "rgba(51,51,51,0.06)",
+                          color: ss.currentStrength === "旺" ? "var(--gold)" : ss.currentStrength === "相" ? "#2d8e47" : "#555",
+                        }}>{ss.currentStrength}</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--ink-soft)", marginTop: 4 }}>{ss.wuxing} · {ss.effect}</div>
+                    </div>
+                  ))}
+                </div>
+              </InfoBlock>
+            )}
+
+
+            {doorRelations.length > 0 && (
+              <InfoBlock title="八门克应">
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {doorRelations.slice(0, 9).map((dr: any, i: number) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "6px 12px",
+                      borderRadius: 8, background: "rgba(51,51,51,0.02)",
+                      fontSize: 13, color: "var(--ink)",
+                    }}>
+                      <span style={{ fontWeight: 600, minWidth: 70, color: "var(--gold)" }}>{dr.palace}</span>
+                      <span>{dr.door}({dr.doorWuxing})</span>
+                      <span style={{ color: dr.relation === "生" || dr.relation === "被生" ? "#2d8e47" : dr.relation === "克" || dr.relation === "被克" ? "#c83828" : "#555", fontWeight: 600 }}>{dr.relation}</span>
+                      <span>{dr.star}({dr.starWuxing})</span>
+                      <span style={{ color: "var(--ink-soft)", fontSize: 12 }}>{dr.meaning}</span>
+                    </div>
+                  ))}
+                </div>
+              </InfoBlock>
+            )}
 
             <div className="qimen-ai-section">
               <button className="qimen-ai-btn" onClick={handleAiAnalyze} disabled={aiLoading}>

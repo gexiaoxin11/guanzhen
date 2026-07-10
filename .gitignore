@@ -7,3 +7,4 @@ output/
 *.tsbuildinfo
 .DS_Store
 .env
+reference/

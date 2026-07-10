@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { runBazi, runBaziShenSha, runBaziDayun, type BaziInput, type BaziOutput, type DayunOutput } from "../../src/lib/taibu";
+import { useState, useMemo } from "react";
+import { runBazi, runBaziFiveElementsStats, runBaziShenSha, runBaziDayun, type BaziInput, type BaziOutput, type DayunOutput } from "../../src/lib/taibu";
+import { generateBaziAnalysis, analyzeYearForecast, analyzeShenSha, analyzePillarChangSheng, analyzeTiaoHou, type BaziAnalysis, type YearAnalysis, type ShenShaReport, type PillarChangShengReport, type ClimateReport } from "../../src/domain/baziAnalysis";
 
 import "../../src/styles.css";
 import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
@@ -9,49 +10,23 @@ import { TIME_OPTIONS, HOUR_STARTS } from "../ziwei-time";
 type CalendarType = "solar" | "lunar";
 type Gender = "male" | "female";
 
-const FIVE_ELEMENTS: Record<string, string> = {
-  "甲": "木", "乙": "木", "丙": "火", "丁": "火", "戊": "土", "己": "土",
-  "庚": "金", "辛": "金", "壬": "水", "癸": "水",
-  "寅": "木", "卯": "木", "巳": "火", "午": "火",
-  "申": "金", "酉": "金", "亥": "水", "子": "水",
-  "辰": "土", "戌": "土", "丑": "土", "未": "土",
-};
-
-const ELEMENT_COLORS: Record<string, string> = { 金: "#D4A017", 木: "#298747", 水: "#317994", 火: "#D44115", 土: "#B8860B" };
-const ELEMENT_ORDER = ["金", "木", "水", "火", "土"];
-
-
-function computeFiveElements(output: BaziOutput): Record<string, number> {
-  const stats: Record<string, number> = { 金: 0, 木: 0, 水: 0, 火: 0, 土: 0 };
-  const pillars = output.fourPillars;
-  for (const key of ["year", "month", "day", "hour"] as const) {
-    const p = pillars[key];
-    const sEl = FIVE_ELEMENTS[p.stem];
-    const bEl = FIVE_ELEMENTS[p.branch];
-    if (sEl) stats[sEl]++;
-    if (bEl) stats[bEl]++;
-    for (const h of p.hiddenStems) {
-      const hEl = FIVE_ELEMENTS[h.stem];
-      if (hEl) stats[hEl]++;
-    }
-  }
-  return stats;
-}
-
 export default function BaziPage() {
   const [birthDate, setBirthDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [timeIndex, setTimeIndex] = useState(0);
   const [gender, setGender] = useState<Gender>("male");
   const [calendarType, setCalendarType] = useState<CalendarType>("solar");
   const [isLeapMonth, setIsLeapMonth] = useState(false);
+  const [useTrueSolar, setUseTrueSolar] = useState(false);
 
   const [baziResult, setBaziResult] = useState<BaziOutput | null>(null);
   const [shenShaResult, setShenShaResult] = useState<any>(null);
   const [dayunResult, setDayunResult] = useState<DayunOutput | null>(null);
-  const [error, setError] = useState("");
+  const [baziAnalysis, setBaziAnalysis] = useState<BaziAnalysis | null>(null);
+  const [yearAnalysis, setYearAnalysis] = useState<YearAnalysis[] | null>(null);  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiQuestion, setAiQuestion] = useState("");
   const [aiResult, setAiResult] = useState("");
   const [aiError, setAiError] = useState("");
 
@@ -65,6 +40,7 @@ export default function BaziPage() {
       const [y, m, d] = birthDate.split("-").map(Number);
       const h = HOUR_STARTS[timeIndex] ?? 12;
       const input: BaziInput = {
+        longitude: useTrueSolar ? 116.4074 : undefined, // 默认北京时间，勾选后使用北京经度
         birthYear: y,
         birthMonth: m,
         birthDay: d,
@@ -79,6 +55,9 @@ export default function BaziPage() {
       const shenSha = await runBaziShenSha(input);
       setBaziResult(result);
       setShenShaResult(shenSha);
+      try { setShenShaReport(analyzeShenSha(shenSha)); } catch { setShenShaReport(null); }
+      try { setChangShengReport(analyzePillarChangSheng(result.fourPillars)); } catch { setChangShengReport(null); }
+      try { setTiaoHouReport(analyzeTiaoHou(result.dayMaster, result.fourPillars.month.branch || result.fourPillars.month.earthlyBranch, result.fourPillars)); } catch { setTiaoHouReport(null); }
       
       // 计算大运（使用 taibu-core 精确算法）
       try {
@@ -97,6 +76,12 @@ export default function BaziPage() {
     }
   };
 
+  // 检测 @mention
+  const baziMentions = useMemo(() => {
+    const triggers: Record<string, string> = {"@八字":"八字命理","@紫微":"紫微斗数","@六爻":"六爻纳甲","@奇门":"奇门遁甲","@六壬":"大六壬","@梅花":"梅花易数"};
+    return Object.entries(triggers).filter(([t]) => aiQuestion.includes(t)).map(([t, l]) => ({ trigger: t, label: l }));
+  }, [aiQuestion]);
+
   const handleAIReading = async () => {
     if (!baziResult) return;
     setAiLoading(true);
@@ -107,7 +92,7 @@ export default function BaziPage() {
       const res = await fetch("/api/bazi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: baziResult }),
+        body: JSON.stringify({ data: baziResult, analysis: baziAnalysisMemo, question: aiQuestion }),
       });
 
       if (!res.ok) {
@@ -124,27 +109,59 @@ export default function BaziPage() {
     }
   };
 
-  const fiveElements = baziResult ? computeFiveElements(baziResult) : null;
+  const ELEMENT_COLORS: Record<string, string> = { 金: "#D4A017", 木: "#298747", 水: "#317994", 火: "#D44115", 土: "#B8860B" };
+const ELEMENT_ORDER = ["金", "木", "水", "火", "土"];
+
+const fiveElements = baziResult ? runBaziFiveElementsStats(baziResult.fourPillars) : null;
+
+const baziAnalysisMemo = useMemo(() => {
+  if (!baziResult || !dayunResult) return null;
+  const dayunList = dayunResult.list.map((dy: any) => ({
+    ganZhi: dy.ganZhi,
+    stem: dy.ganZhi[0],
+    branch: dy.ganZhi[1],
+    tenGod: dy.tenGod,
+    startAge: dy.startAge,
+    startYear: dy.startYear,
+  }));
+  return generateBaziAnalysis(baziResult, dayunList);
+  const yearForecast = useMemo(() => {
+    if (!baziResult || !dayunResult) return null;
+    const dyList = dayunResult.list.slice(0, 8).map(d => ({ ganZhi: d.ganZhi, stem: d.ganZhi[0], branch: d.ganZhi[1], tenGod: d.tenGod, startAge: d.startAge, startYear: d.startYear }));
+    const strength = baziAnalysisMemo.strength;
+    return analyzeYearForecast(strength, dyList, parseInt(birthDate.slice(0, 4)));
+  }, [baziAnalysisMemo, baziResult, dayunResult, birthDate]);
+}, [baziResult, dayunResult]);
   const pillarLabels: Record<string, string> = { year: "年柱", month: "月柱", day: "日柱", hour: "时柱" };
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a className="active" href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a href="/ziwei">紫微</a><a className="active" href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
         
       </header>
 
       <main className="main-flow">
         <section className="ziwei-hero">
           <h1>八字排盘</h1>
-          <p>四柱推命 · 十神 · 藏干 · 纳音 · 神煞</p>
+          <p>四柱推命 · 十神 · 藏干 · 纳音 · 神煞 · 大运流年</p>
         </section>
 
         <form className="ziwei-form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleSubmit(); }}>
           <div className="ziwei-form-row">
             <label><span>出生日期（公历）</span><input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required /></label>
-            <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
+            <label style={{ flex: "0 0 auto", marginTop: 20 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }} onClick={() => setUseTrueSolar(!useTrueSolar)}>
+                  <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: 4, border: "2px solid " + (useTrueSolar ? "var(--gold)" : "rgba(0,0,0,0.2)"), background: useTrueSolar ? "var(--gold)" : "transparent", position: "relative" }}>
+                    {useTrueSolar && <span style={{ position: "absolute", top: 1, left: 4, color: "#fff", fontSize: 11 }}>✓</span>}
+                  </span>
+                  <span style={{ fontSize: 13, color: "var(--ink-soft)" }}>真太阳时</span>
+                </span>
+              </label>
+            </div>
+            <div className="ziwei-form-row">
+              <label><span>出生时辰</span><select value={timeIndex} onChange={(e) => setTimeIndex(Number(e.target.value))}>{TIME_OPTIONS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></label>
             <label style={{ flex: "0 0 80px" }}><span>性别</span><select value={gender} onChange={(e) => setGender(e.target.value as Gender)}><option value="male">男</option><option value="female">女</option></select></label>
             <label><span>历法</span><select value={calendarType} onChange={(e) => setCalendarType(e.target.value as CalendarType)}><option value="solar">公历</option><option value="lunar">农历</option></select></label>
             {calendarType === "lunar" && <label><span>闰月</span><select value={isLeapMonth ? "1" : "0"} onChange={(e) => setIsLeapMonth(e.target.value === "1")}><option value="0">否</option><option value="1">是</option></select></label>}
@@ -376,7 +393,7 @@ export default function BaziPage() {
                 <div className="bazi-card-title">五行统计</div>
                 <div className="bazi-wuxing-bar">
                   {ELEMENT_ORDER.map((el) => {
-                    const count = fiveElements[el] ?? 0;
+                    const count = (fiveElements as unknown as Record<string, number>)[el] ?? 0;
                     const pct = Math.max(count / 20, 0.02);
                     return (
                       <div key={el} className="bazi-wuxing-item">
@@ -395,7 +412,188 @@ export default function BaziPage() {
               </section>
             )}
 
+            {baziAnalysisMemo && (
+              <section className="bazi-result-card">
+                <div className="bazi-card-title">命局分析</div>
+                
+                <div className="bazi-analysis-summary">
+                  {baziAnalysisMemo.summary}
+                </div>
+
+                <div className="bazi-analysis-section">
+                  <div className="bazi-analysis-label">日主强弱</div>
+                  <div className="bazi-strength-bar">
+                    <div className="bazi-strength-track">
+                      <div
+                        className="bazi-strength-fill"
+                        style={{
+                          width: `${(baziAnalysisMemo.strength.score / 10) * 100}%`,
+                          background: baziAnalysisMemo.strength.score >= 6.5 ? '#D44115'
+                            : baziAnalysisMemo.strength.score <= 3.5 ? '#298747'
+                            : '#D4A017'
+                        }}
+                      />
+                    </div>
+                    <div className="bazi-strength-value">
+                      {baziAnalysisMemo.strength.score}/10
+                      <small>（{baziAnalysisMemo.strength.level}）</small>
+                    </div>
+                  </div>
+                  <div className="bazi-analysis-details">
+                    {baziAnalysisMemo.strength.details.map((d, i) => (
+                      <div key={i} className="bazi-analysis-detail">{d}</div>
+                    ))}
+                  </div>
+                </div>
+
+                {baziAnalysisMemo.patterns.length > 0 && (
+                  <div className="bazi-analysis-section">
+                    <div className="bazi-analysis-label">格局判定</div>
+                    <div className="bazi-pattern-list">
+                      {baziAnalysisMemo.patterns.map((p, i) => (
+                        <div key={i} className={"bazi-pattern-item bazi-pattern-" + p.level}>
+                          <div className="bazi-pattern-header">
+                            <span className="bazi-pattern-name">{p.name}</span>
+                            <span className="bazi-pattern-badge">{p.level}</span>
+                            {p.type === "特殊" && <span className="bazi-pattern-special">特殊格局</span>}
+                          </div>
+                          <div className="bazi-pattern-desc">{p.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="bazi-analysis-section">
+                  <div className="bazi-analysis-label">喜用神 & 忌神</div>
+                  <div className="bazi-analysis-row">
+                    <div className="bazi-fav-group">
+                      <span className="bazi-fav-label good">喜用</span>
+                      {baziAnalysisMemo.strength.favorableElements.map((el, i) => (
+                        <span key={i} className="bazi-fav-tag good">{el}</span>
+                      ))}
+                    </div>
+                    <div className="bazi-fav-group">
+                      <span className="bazi-fav-label bad">忌神</span>
+                      {baziAnalysisMemo.strength.unfavorableElements.map((el, i) => (
+                        <span key={i} className="bazi-fav-tag bad">{el}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {baziAnalysisMemo.dayunAdvice.length > 0 && (
+                  <div className="bazi-analysis-section">
+                    <div className="bazi-analysis-label">大运吉凶</div>
+                {yearForecast && yearForecast.length > 0 && (
+                  <div className="bazi-analysis-section">
+                    <div className="bazi-analysis-label">流年分析（近五年）</div>
+                    <div className="bazi-dayun-advice-list">
+                      {yearForecast.map((yf: any, i: number) => (
+                        <div key={i} className={"bazi-dayun-advice-item rating-" + yf.rating}>
+                          <span className="bazi-dayun-advice-period">{yf.year}年 {yf.ganZhi}</span>
+                          <span className={"bazi-dayun-advice-rating " + yf.rating}>{yf.rating}</span>
+                          <span className="bazi-dayun-advice-summary">{yf.mainEvent} · {yf.interaction}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                    <div className="bazi-dayun-advice-list">
+                      {baziAnalysisMemo.dayunAdvice.map((da, i) => (
+                        <div key={i} className={"bazi-dayun-advice-item rating-" + da.rating}>
+                          <span className="bazi-dayun-advice-period">{da.period}</span>
+                          <span className="bazi-dayun-advice-age">{da.age}</span>
+                          <span className={"bazi-dayun-advice-rating " + da.rating}>{da.rating}</span>
+                          <span className="bazi-dayun-advice-summary">{da.summary}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {dayunResult && (
+              <section className="bazi-result-card">
+                <div className="bazi-card-title">大运流年</div>
+                <div className="bazi-dayun-header">
+                  <span className="bazi-dayun-age">起运：{dayunResult.startAge}岁</span>
+                  <span className="bazi-dayun-detail">{dayunResult.startAgeDetail}</span>
+                </div>
+                <div className="bazi-dayun-list">
+                  {dayunResult.list.slice(0, 8).map((dy, i) => (
+                    <details key={i} className="bazi-dayun-item" open={i === 0}>
+                      <summary className="bazi-dayun-summary">
+                        <span className="bazi-dayun-period">
+                          <strong>{dy.ganZhi}</strong>
+                          <small>{dy.tenGod}</small>
+                        </span>
+                        <span className="bazi-dayun-range">{dy.startAge}岁 · {dy.startYear}年起</span>
+                        <span className="bazi-dayun-branch">
+                          {dy.branchTenGod && <small>支：{dy.branchTenGod}</small>}
+                        </span>
+                      </summary>
+                      <div className="bazi-dayun-detail-body">
+                        <div className="bazi-dayun-info">
+                          {dy.naYin && <span className="bazi-tag bazi-tag-he">纳音：{dy.naYin}</span>}
+                          {dy.diShi && <span className="bazi-tag bazi-tag-he">地势：{dy.diShi}</span>}
+                          {dy.shenSha.length > 0 && dy.shenSha.map((s) => (
+                            <span key={s} className="bazi-tag bazi-tag-ji">{s}</span>
+                          ))}
+                        </div>
+                        {dy.branchRelations.length > 0 && (
+                          <div className="bazi-dayun-relations">
+                            {dy.branchRelations.map((r, j) => (
+                              <span key={j} className="bazi-tag bazi-tag-chong">
+                                {r.type}：{r.branches.join('·')}（{r.description}）
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {dy.liunianList && dy.liunianList.length > 0 && (
+                          <div className="bazi-liunian-section">
+                            <div className="bazi-liunian-title">流年</div>
+                            <div className="bazi-liunian-grid">
+                              {dy.liunianList.map((ln, j) => (
+                                <div key={j} className={ln.taiSui ? 'bazi-liunian-item taisui' : 'bazi-liunian-item'}>
+                                  <span className="bazi-liunian-year">{ln.year}</span>
+                                  <span className="bazi-liunian-gz">{ln.ganZhi}</span>
+                                  {ln.tenGod && <span className="bazi-liunian-tg">{ln.tenGod}</span>}
+                                  {ln.taiSui && <span className="bazi-liunian-taisui">太岁</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <section className="bazi-ai-section">
+              <div className="bazi-ai-question-row">
+                <textarea
+                  className="bazi-ai-question-input"
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  placeholder="可选：输入你想问的具体问题… 输入 @八字 引用知识库"
+                  rows={2}
+                />
+                {baziMentions.length > 0 && (
+                  <div className="mention-bar">
+                    <span className="mention-hint">📚 已引用知识库：</span>
+                    {baziMentions.map((m, i) => (
+                      <span key={i} className="mention-tag" style={{ borderColor: '#298747', color: '#298747' }}>
+                        {m.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button className="bazi-ai-btn" onClick={handleAIReading} disabled={aiLoading}>
                 {aiLoading ? "解读中…" : "深度解读"}
               </button>
@@ -789,6 +987,141 @@ export default function BaziPage() {
             grid-template-columns: repeat(2, 1fr);
           }
         }
+
+        /* 大运流年 */
+        .bazi-dayun-header {
+          display: flex;
+          gap: 16px;
+          align-items: baseline;
+          padding: 10px 0 16px;
+          border-bottom: 1px solid rgba(51, 51, 51, 0.06);
+          margin-bottom: 12px;
+        }
+        .bazi-dayun-age {
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--gold);
+        }
+        .bazi-dayun-detail {
+          font-size: 12px;
+          color: var(--ink-soft);
+        }
+        .bazi-dayun-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .bazi-dayun-item {
+          border: 1px solid rgba(51, 51, 51, 0.08);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .bazi-dayun-summary {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          cursor: pointer;
+          background: var(--surface-strong);
+          font-size: 14px;
+          transition: background 0.15s;
+          list-style: none;
+        }
+        .bazi-dayun-summary::-webkit-details-marker {
+          display: none;
+        }
+        .bazi-dayun-summary:hover {
+          background: rgba(242, 237, 229, 0.8);
+        }
+        .bazi-dayun-period {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+          min-width: 80px;
+        }
+        .bazi-dayun-period strong {
+          font-size: 16px;
+          letter-spacing: 0.06em;
+        }
+        .bazi-dayun-period small {
+          font-size: 11px;
+          color: var(--ink-soft);
+        }
+        .bazi-dayun-range {
+          font-size: 13px;
+          color: var(--ink-soft);
+        }
+        .bazi-dayun-branch {
+          margin-left: auto;
+        }
+        .bazi-dayun-branch small {
+          font-size: 11px;
+          color: var(--blue);
+        }
+        .bazi-dayun-detail-body {
+          padding: 12px 16px 16px;
+          background: rgba(242, 237, 229, 0.3);
+          border-top: 1px solid rgba(51, 51, 51, 0.04);
+        }
+        .bazi-dayun-info {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 8px;
+        }
+        .bazi-dayun-relations {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+        .bazi-liunian-section {
+          margin-top: 4px;
+        }
+        .bazi-liunian-title {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--ink-soft);
+          margin-bottom: 6px;
+        }
+        .bazi-liunian-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: 4px;
+        }
+        .bazi-liunian-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 6px 4px;
+          border-radius: 6px;
+          background: rgba(51, 51, 51, 0.03);
+          font-size: 12px;
+          gap: 2px;
+        }
+        .bazi-liunian-item.taisui {
+          background: rgba(212, 65, 21, 0.06);
+          border: 1px solid rgba(212, 65, 21, 0.15);
+        }
+        .bazi-liunian-year {
+          font-weight: 600;
+          color: var(--ink);
+        }
+        .bazi-liunian-gz {
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+        }
+        .bazi-liunian-tg {
+          font-size: 10px;
+          color: var(--ink-soft);
+        }
+        .bazi-liunian-taisui {
+          font-size: 10px;
+          color: var(--red);
+          font-weight: 600;
+        }
+
       `}</style>
     </div>
   );

@@ -35,6 +35,27 @@ type CoinCast = {
   coins: Array<"字" | "背">;
 };
 
+
+// ─── @mention 知识库引用 ───
+const MENTION_TRIGGERS: Record<string, { label: string; color: string; keywords: string[] }> = {
+  "@八字":   { label: "八字命理",   color: "#298747", keywords: ["八字", "四柱", "十神", "日主", "大运", "流年", "格局", "用神", "喜忌"] },
+  "@紫微":   { label: "紫微斗数",  color: "#7B2D8B", keywords: ["紫微", "天府", "天机", "太阳", "武曲", "天同", "廉贞", "四化", "命盘", "十二宫"] },
+  "@六爻":   { label: "六爻纳甲",  color: "#D44115", keywords: ["六爻", "卦象", "世应", "用神", "伏神", "动变", "爻辞", "纳甲", "应期"] },
+  "@奇门":   { label: "奇门遁甲",  color: "#317994", keywords: ["奇门", "八门", "九星", "值符", "值使", "三奇六仪", "遁甲", "时家"] },
+  "@六壬":   { label: "大六壬",    color: "#D4A017", keywords: ["六壬", "四课", "三传", "天将", "贵人", "月将", "课体", "涉害"] },
+  "@小六壬":  { label: "道家小六壬", color: "#8B4513", keywords: ["小六壬", "大安", "留连", "速喜", "赤口", "小吉", "空亡", "三宫"] },
+  "@梅花":   { label: "梅花易数",  color: "#B8860B", keywords: ["梅花", "体用", "互卦", "变卦", "生克", "外应", "起卦"] },
+};
+
+function detectMentions(question: string): Array<{ trigger: string; label: string; color: string; keywords: string[] }> {
+  const found: Array<{ trigger: string; label: string; color: string; keywords: string[] }> = [];
+  for (const [trigger, info] of Object.entries(MENTION_TRIGGERS)) {
+    if (question.includes(trigger)) {
+      found.push({ trigger, ...info });
+    }
+  }
+  return found;
+}
 const topicLabels: Record<Topic, string> = {
   general: "综合",
   career: "事业",
@@ -162,16 +183,24 @@ export function App() {
     return calculateLiuyao(input);
   }, [canCalculate, input]);
 
-  const taibuAnalysis = useMemo(() => {
-    if (!chart || !chart.original) return null;
-    try {
-      return taibuAnalyzeLiuyao(
-        chart.original.name,
-        chart.changed?.name,
-        input.question,
-        input.date + "T" + String(input.hour).padStart(2, "0") + ":" + String(input.minute).padStart(2, "0"),
-      );
-    } catch { return null; }
+  const [taibuAnalysis, setTaibuAnalysis] = useState<any>(null);
+
+  useEffect(() => {
+    if (!chart || !chart.original) { setTaibuAnalysis(null); return; }
+    // 没有写求测问题时不分析用神
+    if (!input.question || input.question.trim().length < 2) { setTaibuAnalysis(null); return; }
+    let cancelled = false;
+    taibuAnalyzeLiuyao(
+      chart.original.name,
+      chart.changed?.name,
+      input.question,
+      input.date + "T" + String(input.hour).padStart(2, "0") + ":" + String(input.minute).padStart(2, "0"),
+    ).then((result) => {
+      if (!cancelled) setTaibuAnalysis(result);
+    }).catch(() => {
+      if (!cancelled) setTaibuAnalysis(null);
+    });
+    return () => { cancelled = true; };
   }, [chart, input.question, input.date, input.hour, input.minute]);
 
   useEffect(() => {
@@ -238,6 +267,8 @@ export function App() {
   function setQuestion(question: string) {
     setInput((current) => ({ ...current, question }));
   }
+
+  const activeMentions = useMemo(() => detectMentions(input.question), [input.question]);
 
   function setTopic(topic: Topic) {
     setInput((current) => ({ ...current, topic }));
@@ -308,31 +339,41 @@ export function App() {
   async function submitReading(event: React.FormEvent) {
     event.preventDefault();
     if (!canCalculate || !chart) return;
-    if (!checkAuth("liuyao")) { router.replace("/activate"); return; }
     setSubmitted(true);
     setLoadingReading(true);
     setReading("");
     const divinationId = await saveArchive(chart);
-    try {
-      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
-      const response = await fetch("/api/readings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({ question: input.question, persona, depth, chart, divinationId }),
-      });
-      if (!response.ok) throw new Error("AI 解读接口暂不可用");
-      const data = await response.json();
-      const finalText = String(data.text ?? "");
-      setReading(finalText);
-      saveFullRecord(divinationId, chart, finalText);
-    } catch {
+    const hasAuth = checkAuth("liuyao");
+    
+    if (hasAuth) {
+      try {
+        const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+        const response = await fetch("/api/readings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ question: input.question, persona, depth, chart, divinationId }),
+        });
+        if (!response.ok) throw new Error("AI 解读接口暂不可用");
+        const data = await response.json();
+        const finalText = String(data.text ?? "");
+        setReading(finalText);
+        saveFullRecord(divinationId, chart, finalText);
+      } catch {
+        const localText = buildLocalReading({ chart, question: input.question, persona, depth });
+        setReading(localText);
+        saveFullRecord(divinationId, chart, localText);
+      } finally {
+        setLoadingReading(false);
+        window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      }
+    } else {
+      // No auth: use local rules only, show activation hint
       const localText = buildLocalReading({ chart, question: input.question, persona, depth });
-      setReading(localText);
+      setReading(localText + "\n\n---\n💡 想要获取更深入的AI解读？请访问 /activate 激活密钥解锁高级解读功能。");
       saveFullRecord(divinationId, chart, localText);
-    } finally {
       setLoadingReading(false);
       window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     }
@@ -448,9 +489,19 @@ export function App() {
               id="question"
               value={input.question}
               onChange={(event) => setQuestion(event.target.value)}
-              placeholder="请输入你想问的具体问题..."
+              placeholder="请输入你想问的具体问题"
               rows={2}
             />
+            {activeMentions.length > 0 && (
+              <div className="mention-bar">
+                <span className="mention-hint">📚 已引用知识库：</span>
+                {activeMentions.map((m, i) => (
+                  <span key={i} className="mention-tag" style={{ borderColor: m.color, color: m.color }}>
+                    {m.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="form-card">
@@ -459,14 +510,15 @@ export function App() {
               <div className="time-editor">
                 <Clock size={14} className="time-icon" />
                 <input
-                    type="datetime-local"
-                    value={`${input.date}T${String(input.hour).padStart(2, "0")}:${String(input.minute).padStart(2, "0")}`}
-                    onChange={(event) => {
-                      const [date, time] = event.target.value.split("T");
-                      const [h, m] = (time || "00:00").split(":");
-                      setInput({ ...input, date: date || input.date, hour: Number(h), minute: Number(m) });
-                    }}
-                  />
+                  type="datetime-local"
+                  value={`${input.date}T${String(input.hour).padStart(2, "0")}:${String(input.minute).padStart(2, "0")}`}
+                  onChange={(e) => {
+                    const [date, time] = e.target.value.split("T");
+                    const [h, m] = (time || "00:00").split(":");
+                    setInput({ ...input, date: date || input.date, hour: Number(h), minute: Number(m) });
+                  }}
+                  step="60"
+                />
                 <button type="button" className="time-now-btn" onClick={setCurrentBeijingTime}>当前时间</button>
               </div>
               <div className="mode-segment">
@@ -506,15 +558,16 @@ export function App() {
 
           {canCalculate && !submitted && (
             <section className="preview-stack">
-              {chart && <HexagramPreview chart={chart} />}
+              {chart && <HexagramPreview chart={chart} taibu={taibuAnalysis as any} />}
               {quickRead && <QuickRead quickRead={quickRead} />}
-            {taibuAnalysis && submitted && (
+            {taibuAnalysis && (
               <article className="reading-card">
                 <h2>用神 · 伏神 · 应期</h2>
                 <div className="divider" />
                 <TaibuAnalysisView analysis={taibuAnalysis} />
               </article>
-            )}            </section>
+            )}
+            </section>
           )}
 
           {canCalculate && (
@@ -531,7 +584,7 @@ export function App() {
               <p>{input.question.trim() || "未填写具体问题，按当前卦象作通盘参考。"}</p>
               <button type="button" onClick={resetAll}><RotateCcw size={15} /> 再起一卦</button>
             </div>
-            <HexagramPreview chart={chart} expanded />
+            <HexagramPreview chart={chart} expanded taibu={taibuAnalysis as any} />
             {quickRead && <QuickRead quickRead={quickRead} />}
             {taibuAnalysis && submitted && (
               <article className="reading-card">
@@ -569,7 +622,7 @@ export function App() {
 }
 
 function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | null; supabaseReady: boolean; onOpenAuth: () => void }) {
-  const nav = ["首页", "六爻", "紫微", "八字排盘", "奇门遁甲", "大六壬", "梅花易数"];
+  const nav = ["首页", "六爻", "紫微", "八字排盘", "奇门遁甲", "大六壬", "梅花易数", "黄历", "小六壬"];
   return (
     <header className="topbar">
       <a className="brand" href="/">
@@ -580,7 +633,7 @@ function TopNav({ userEmail, supabaseReady, onOpenAuth }: { userEmail: string | 
         {nav.map((item) => (
           <a
             className={item === "六爻" ? "active" : ""}
-            href={item === "首页" ? "/" : item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : item === "八字排盘" ? "/bazi" : item === "奇门遁甲" ? "/qimen" : item === "大六壬" ? "/daliuren" : item === "梅花易数" ? "/meihua" : "#"}
+            href={item === "首页" ? "/" : item === "六爻" ? "/liuyao" : item === "紫微" ? "/ziwei" : item === "八字排盘" ? "/bazi" : item === "奇门遁甲" ? "/qimen" : item === "大六壬" ? "/daliuren" : item === "梅花易数" ? "/meihua" : item === "黄历" ? "/almanac" : item === "小六壬" ? "/xiaoliuren" : "#"}
             key={item}
           >{item}</a>
         ))}
@@ -738,7 +791,17 @@ function LinePicker({ mode, values, onChange }: { mode: CastMode; values: YaoVal
   );
 }
 
-function HexagramPreview({ chart, expanded = false }: { chart: LiuyaoChart; expanded?: boolean }) {
+function HexagramPreview({ chart, expanded = false, taibu }: { chart: LiuyaoChart; expanded?: boolean; taibu?: any }) {
+  const guaCi = taibu?.hexagramBrief || taibu?.guaCi;
+  const xiangCi = taibu?.xiangCi;
+  const changedGuaCi = taibu?.changedGuaCi;
+  const changedXiangCi = taibu?.changedXiangCi;
+  const hue = taibu?.nuclearHexagram;
+  const cuo = taibu?.oppositeHexagram;
+  const zong = taibu?.reversedHexagram;
+  const guaShen = taibu?.guaShen;
+  const hasTaibuData = !!(guaCi || xiangCi || hue || cuo || zong || guaShen);
+
   return (
     <section className={expanded ? "hex-preview expanded" : "hex-preview"}>
       <div className="hex-head">
@@ -746,14 +809,30 @@ function HexagramPreview({ chart, expanded = false }: { chart: LiuyaoChart; expa
           <span>本卦</span>
           <strong>{chart.original.name}</strong>
           <small>{chart.original.palace}宫 · {chart.original.stage} · 五行{chart.original.palaceElement}</small>
+          {guaCi && <small className="guaci-text">卦辞：{guaCi}</small>}
+          {xiangCi && <small className="guaci-text">象辞：{xiangCi}</small>}
         </div>
         <Compass size={22} />
         <div>
           <span>变卦</span>
           <strong>{chart.changed.name}</strong>
           <small>{chart.changed.palace}宫 · {chart.changed.stage} · 五行{chart.changed.palaceElement}</small>
+          {changedGuaCi && <small className="guaci-text">卦辞：{changedGuaCi}</small>}
+          {changedXiangCi && <small className="guaci-text">象辞：{changedXiangCi}</small>}
         </div>
       </div>
+      {hasTaibuData && (
+        <div className="taibu-badges">
+          {guaShen && (
+            <span className="taibu-badge guashen">
+              卦身：{typeof guaShen === 'string' ? guaShen : (guaShen.label || guaShen.diZhi || guaShen.yaoPosition || '—')}
+            </span>
+          )}
+          {hue && <span className="taibu-badge hue">互卦：{typeof hue === 'string' ? hue : (hue.name || hue.hexagramName || '—')}</span>}
+          {cuo && <span className="taibu-badge cuo">错卦：{typeof cuo === 'string' ? cuo : (cuo.name || cuo.hexagramName || '—')}</span>}
+          {zong && <span className="taibu-badge zong">综卦：{typeof zong === 'string' ? zong : (zong.name || zong.hexagramName || '—')}</span>}
+        </div>
+      )}
       <div className="meta-chips">
         <span>{chart.year.text}年</span>
         <span>{chart.month.text}月</span>
@@ -1166,7 +1245,7 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
           <div style={labelStyle}>用神</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {ys.map((y: any, i: number) => (
-              <span key={i} style={chipStyle}>{y.target || y.label} · {y.yaoPosition || y.position}</span>
+              <span key={i} style={chipStyle}>{typeof y === "object" ? (y.target || y.label || y.liuQin) : String(y)}{(y.yaoPosition || y.position) ? " · " + (typeof y.yaoPosition === "object" ? (y.yaoPosition.label || y.yaoPosition.liuQin || y.yaoPosition.position) : (y.yaoPosition || y.position || "")) : ""}</span>
             ))}
           </div>
         </div>
@@ -1177,7 +1256,7 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
           <div style={labelStyle}>伏神</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {fs.map((f: any, i: number) => (
-              <span key={i} style={{ ...chipStyle, background: "rgba(212,65,21,0.08)" }}>{f.sixRelation || f.label} · {f.hiddenUnder}</span>
+              <span key={i} style={{ ...chipStyle, background: "rgba(212,65,21,0.08)" }}>{typeof f === "object" ? (f.sixRelation || f.label || f.liuQin) : String(f)}{f.hiddenUnder ? " · " + (typeof f.hiddenUnder === "object" ? (f.hiddenUnder.label || f.hiddenUnder.liuQin || f.hiddenUnder.position) : f.hiddenUnder) : ""}</span>
             ))}
           </div>
         </div>
@@ -1189,7 +1268,7 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
           {ss.map((s: any, i: number) => (
             <div key={i} style={{ fontSize: 12, color: "var(--ink)", lineHeight: 1.6 }}>
               <strong>{s.yongShen?.label || s.yongShenTarget}:</strong>{" "}
-              原神: {s.yuanShen || "-"} | 忌神: {s.jiShen || "-"} | 仇神: {s.chouShen || "-"}
+              原神: {typeof s.yuanShen === "object" ? (s.yuanShen.liuQin || s.yuanShen.label || s.yuanShen.sixRelation || "—") : (s.yuanShen || "—")} | 忌神: {typeof s.jiShen === "object" ? (s.jiShen.liuQin || s.jiShen.label || s.jiShen.sixRelation || "—") : (s.jiShen || "—")} | 仇神: {typeof s.chouShen === "object" ? (s.chouShen.liuQin || s.chouShen.label || s.chouShen.sixRelation || "—") : (s.chouShen || "—")}
             </div>
           ))}
         </div>
@@ -1198,14 +1277,14 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
       {kws && (
         <div>
           <div style={labelStyle}>空亡</div>
-          <div style={valStyle}>{typeof kws === "object" ? (kws as any).xun || JSON.stringify(kws).slice(0, 40) : String(kws)}</div>
+          <div style={valStyle}>{typeof kws === "object" ? ((kws as any).xun || (kws as any).label || (kws as any).branch || (kws as any).diZhi || "—") : String(kws)}</div>
         </div>
       )}
 
       {gs && (
         <div>
           <div style={labelStyle}>卦身</div>
-          <div style={valStyle}>{typeof gs === "object" ? (gs as any).label || (gs as any).yaoPosition || JSON.stringify(gs).slice(0, 40) : String(gs)}</div>
+          <div style={valStyle}>{typeof gs === "object" ? ((gs as any).label || (gs as any).diZhi || (gs as any).yaoPosition || (gs as any).position || "—") : String(gs)}</div>
         </div>
       )}
 
@@ -1236,17 +1315,47 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
       {sanhe && (
         <div>
           <div style={labelStyle}>三合局</div>
-          <div style={{ fontSize: 12, color: "var(--ink)" }}>{(sanhe as any).summary || JSON.stringify(sanhe).slice(0, 80)}</div>
+          <div style={{ fontSize: 12, color: "var(--ink)" }}>{(sanhe as any).summary || ((sanhe as any).name || (sanhe as any).label || "—")}</div>
         </div>
       )}
 
       {(hue || cuo || zong) && (
         <div>
           <div style={labelStyle}>互卦 · 错卦 · 综卦</div>
-          <div style={{ display: "flex", gap: 8, fontSize: 12 }}>
-            {hue && <span style={chipStyle}>互卦: {(hue as any).name || ""}</span>}
-            {cuo && <span style={chipStyle}>错卦: {(cuo as any).name || ""}</span>}
-            {zong && <span style={chipStyle}>综卦: {(zong as any).name || ""}</span>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {hue && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(212,65,21,0.04)", border: "1px solid rgba(212,65,21,0.1)" }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--gold)" }}>互卦</span>
+                  <span style={{ fontSize: 13, color: "var(--ink)" }}>{(hue as any).name || "—"}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  互卦由本卦二三四爻为下卦、三四五爻为上卦组成，揭示事物发展的中间过程与内在变化。
+                </div>
+              </div>
+            )}
+            {cuo && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(49,121,148,0.04)", border: "1px solid rgba(49,121,148,0.1)" }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#317994" }}>错卦</span>
+                  <span style={{ fontSize: 13, color: "var(--ink)" }}>{(cuo as any).name || "—"}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  错卦将本卦各爻阴阳全变，代表事物的完全反面或根本性转变。阴阳相错，见微知著。
+                </div>
+              </div>
+            )}
+            {zong && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(46,142,71,0.04)", border: "1px solid rgba(46,142,71,0.1)" }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#2d8e47" }}>综卦</span>
+                  <span style={{ fontSize: 13, color: "var(--ink)" }}>{(zong as any).name || "—"}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  综卦将本卦上下颠倒，代表换个角度看待同一事物。反覆相综，换位思考。
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1256,7 +1365,7 @@ function TaibuAnalysisView({ analysis }: { analysis: ReturnType<typeof taibuAnal
           <div style={labelStyle}>应期推测</div>
           {timeRecs.map((t: any, i: number) => (
             <div key={i} style={{ fontSize: 12, color: "var(--ink)", marginTop: 2 }}>
-              {t.phase || ""} {t.trigger || ""}: {t.summary || ""}
+              {typeof t.phase === "object" ? (t.phase.label || t.phase.name || "—") : (t.phase || "")} {typeof t.trigger === "object" ? (t.trigger.label || t.trigger.name || "—") : (t.trigger || "")}: {typeof t.summary === "object" ? (t.summary.label || t.summary.name || "—") : (t.summary || "")}
             </div>
           ))}
         </div>

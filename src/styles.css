@@ -230,8 +230,7 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 520px;
-  padding: 10px 0 28px;
+  padding: 40px 0 28px;
   text-align: center;
 }
 
@@ -664,7 +663,19 @@ input:focus {
   width: 210px;
 }
 
+.time-editor input {
+  position: relative;
+}
 .time-editor input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.time-editor input::-webkit-datetime-edit-ampm-field {
   display: none;
 }
 
@@ -952,6 +963,63 @@ input:focus {
 
 .hex-head svg {
   color: var(--gold-dark);
+}
+
+/* 卦辞爻辞文案 */
+.guaci-text {
+  display: block;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-left: 2px solid var(--gold-soft);
+  background: rgba(212, 65, 21, 0.04);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 360px;
+}
+
+/* taibu 数据徽章 */
+.taibu-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.taibu-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.taibu-badge.guashen {
+  background: rgba(212, 65, 21, 0.08);
+  color: var(--gold-dark);
+  border: 1px solid rgba(212, 65, 21, 0.15);
+}
+
+.taibu-badge.hue {
+  background: rgba(41, 135, 71, 0.07);
+  color: #298747;
+  border: 1px solid rgba(41, 135, 71, 0.15);
+}
+
+.taibu-badge.cuo {
+  background: rgba(49, 121, 148, 0.07);
+  color: #317994;
+  border: 1px solid rgba(49, 121, 148, 0.15);
+}
+
+.taibu-badge.zong {
+  background: rgba(184, 134, 11, 0.07);
+  color: #B8860B;
+  border: 1px solid rgba(184, 134, 11, 0.15);
 }
 
 .meta-chips {
@@ -1652,7 +1720,7 @@ input:focus {
   }
 
   .hero {
-    min-height: 438px;
+    padding: 30px 0 24px;
   }
 
   .bagua {
@@ -2999,4 +3067,274 @@ input:focus {
   outline: none;
   background: rgba(255, 250, 240, 0.92);
   color: var(--ink);
+}
+
+/* ─── @mention 知识库引用 ─── */
+.mention-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(51, 51, 51, 0.03);
+  border-radius: 8px;
+  border: 1px dashed rgba(51, 51, 51, 0.1);
+}
+.mention-hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+.mention-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 4px;
+  border: 1.5px solid;
+  background: transparent;
+  letter-spacing: 0.04em;
+}
+
+/* ─── 神煞详解 ─── */
+.bazi-shensha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 6px;
+}
+.bazi-shensha-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.bazi-shensha-item.good { background: rgba(46,142,71,0.06); }
+.bazi-shensha-item.bad { background: rgba(200,60,40,0.05); }
+.bazi-shensha-item.neutral { background: rgba(49,121,148,0.05); }
+.bazi-shensha-name {
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 80px;
+}
+.bazi-shensha-pillar {
+  font-size: 11px;
+  color: var(--ink-soft);
+  background: rgba(51,51,51,0.06);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.bazi-shensha-meaning {
+  flex: 1;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+/* ─── 长生十二宫 ─── */
+.bazi-changsheng-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.bazi-changsheng-item {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(51,51,51,0.08);
+  text-align: center;
+}
+.bazi-changsheng-pillar {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.bazi-changsheng-ganzhi {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.bazi-changsheng-stage {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.bazi-changsheng-nayin {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+@media (max-width: 480px) {
+  .bazi-changsheng-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ─── 六爻卦宫 ─── */
+.guagong-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(212,65,21,0.08);
+  color: var(--gold);
+}
+.guagong-badge .guagong-name {
+  font-size: 15px;
+}
+
+/* ─── 首页系统卡片 ─── */
+.home-systems {
+  max-width: 950px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+}
+.home-section-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 16px;
+  letter-spacing: 0.04em;
+}
+.home-systems-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.home-system-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(51,51,51,0.08);
+  border-top-width: 3px;
+  background: var(--surface-strong);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.home-system-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+.home-system-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.home-system-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.home-system-desc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0;
+}
+.home-cta {
+  display: flex;
+  justify-content: center;
+  margin: 36px 0 20px;
+}
+.home-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 40px;
+  border-radius: 13px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: all 0.2s;
+}
+.home-cta-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(212,65,21,0.3);
+}
+.home-footer {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding: 30px 0 40px;
+}
+
+@media (max-width: 768px) {
+  .home-systems-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .home-system-card {
+    padding: 14px 12px;
+  }
+}
+@media (max-width: 480px) {
+  .home-systems-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── 全局移动端响应式 ─── */
+@media (max-width: 768px) {
+  .desktop-nav {
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .desktop-nav a {
+    padding: 4px 8px;
+  }
+  .topbar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .main-flow {
+    padding: 0 10px;
+  }
+  .ziwei-hero h1 {
+    font-size: 28px;
+  }
+  .ziwei-form-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .bazi-pillars-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .bazi-changsheng-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .bazi-shensha-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .qimen-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px !important;
+  }
+  .qimen-palace {
+    padding: 6px !important;
+  }
+  .hero h1 {
+    font-size: 40px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .bazi-pillars-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .bazi-changsheng-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .qimen-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }

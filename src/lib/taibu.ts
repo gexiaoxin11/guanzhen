@@ -4,7 +4,7 @@ import {
   type LiuyaoOutput,
 } from "taibu-core/liuyao";
 import { calculateZiwei, type ZiweiInput, type ZiweiOutput } from "taibu-core/ziwei";
-import { calculateBazi, calculateBaziShenShaData, type BaziInput, type BaziOutput } from "taibu-core/bazi";
+import { calculateBazi, calculateBaziFiveElementsStats, calculateBaziShenShaData, type BaziInput, type BaziOutput } from "taibu-core/bazi";
 import { calculateQimen, type QimenInput, type QimenOutput } from "taibu-core/qimen";
 import { calculateDaliuren, type DaliurenInput, type DaliurenOutput } from "taibu-core/daliuren";
 import { calculateBaziDayun, type DayunInput, type DayunOutput } from "taibu-core/bazi-dayun";
@@ -45,6 +45,10 @@ export async function runDaliuren(input: DaliurenInput): Promise<DaliurenOutput>
   return calculateDaliuren(input);
 }
 
+export function runBaziFiveElementsStats(fourPillars: BaziOutput['fourPillars']) {
+  return calculateBaziFiveElementsStats(fourPillars);
+}
+
 export async function runBaziDayun(input: DayunInput): Promise<DayunOutput> {
   return calculateBaziDayun(input);
 }
@@ -53,4 +57,11 @@ export type { DayunInput, DayunOutput };
 
 export async function runMeihua(input: MeihuaInput): Promise<MeihuaOutput> {
   return calculateMeihua(input);
+}
+
+import { calculateDailyAlmanac, type AlmanacInput, type AlmanacOutput } from "taibu-core/almanac";
+
+export type { AlmanacInput, AlmanacOutput };
+export async function runAlmanac(input: AlmanacInput): Promise<AlmanacOutput> {
+  return calculateDailyAlmanac(input);
 }

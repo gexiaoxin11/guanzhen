@@ -112,8 +112,10 @@ export default function HistoryDetailPage() {
           
         </a>
         <nav className="desktop-nav">
-          <a className="active" href="/liuyao">六爻</a>
-          <a href="/ziwei">紫微</a>
+          <a href="/">首页</a><a className="active" href="/liuyao">六爻</a><a href="/ziwei">紫微</a>
+          <a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a>
+          <a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a>
+          <a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a>
         </nav>
         <span className="profile-pill" style={{ fontSize: 12, color: "var(--ink-soft)" }}>
           {record.createdAt ? new Date(record.createdAt).toLocaleString("zh-CN") : ""}

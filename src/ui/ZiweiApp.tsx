@@ -3,7 +3,7 @@
 import { astro } from "iztro";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { generateZiweiAnalysis } from "../domain/ziweiAnalysis";
+import { generateZiweiAnalysis, analyzeSanFangSiZheng, analyzeStarBrightness, analyzeZiweiHoroscope, analyzeStarCombinations, type SanFangSiZhengResult, type BrightnessReport, type HoroscopeReport, type StarComboReport } from "../domain/ziweiAnalysis";
 import { taibuCalculateZiwei, type ZiweiOutput } from "../lib/ziweiTaibu";import "../styles.css";
 
 // ─── 四化映射表: 天干 → [禄星, 权星, 科星, 忌星] ───
@@ -168,6 +168,22 @@ export function ZiweiApp() {
     if (!astroData) return null;
     return generateZiweiAnalysis(astroData);
   }, [astroData]);
+  const sanFangAnalysis = useMemo(() => {
+    if (!astroData) return [];
+    try { return analyzeSanFangSiZheng(astroData); } catch { return []; }
+  }, [astroData]);
+  const brightnessReport = useMemo(() => {
+    if (!astroData) return null;
+    try { return analyzeStarBrightness(astroData); } catch { return null; }
+  }, [astroData]);
+  const horoscopeReport = useMemo(() => {
+    if (!astroData || !birthDate) return null;
+    try { return analyzeZiweiHoroscope(astroData, birthDate, timeIndex); } catch { return null; }
+  }, [astroData, birthDate, timeIndex]);
+  const starComboReport = useMemo(() => {
+    if (!astroData) return [];
+    try { return analyzeStarCombinations(astroData); } catch { return []; }
+  }, [astroData]);
 
   const taibuZiwei = useMemo(() => {
     if (!astroData || !birthDate) return null;
@@ -304,7 +320,7 @@ export function ZiweiApp() {
   if (!mounted) {
     return <div className="app-shell"><header className="topbar">
       <a className="brand" href="/"><span>观真</span></a>
-      <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+      <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
       
     </header><main className="main-flow" /></div>;
   }
@@ -313,7 +329,7 @@ export function ZiweiApp() {
     <div className="app-shell">
       <header className="topbar">
         <a className="brand" href="/"><span>观真</span></a>
-        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a></nav>
+        <nav className="desktop-nav"><a href="/">首页</a><a href="/liuyao">六爻</a><a className="active" href="/ziwei">紫微</a><a href="/bazi">八字排盘</a><a href="/qimen">奇门遁甲</a><a href="/daliuren">大六壬</a><a href="/meihua">梅花易数</a><a href="/almanac">黄历</a><a href="/xiaoliuren">小六壬</a></nav>
         
       </header>
       <main className="main-flow">
@@ -869,6 +885,113 @@ export function ZiweiApp() {
 
           </section>
         )}
+      
+        {/* 星曜亮度分析 */}
+        {brightnessReport && (
+          <section style={{ marginTop: 24 }}>
+            <h2 className="section-heading">星曜亮度 · 庙旺利陷</h2>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", margin: "8px 0 16px" }}>
+              命盘综合亮度：<strong style={{ color: brightnessReport.overallLevel === "强" ? "var(--gold)" : brightnessReport.overallLevel === "弱" ? "var(--red)" : "#317994" }}>{brightnessReport.overallLevel}</strong>（{brightnessReport.overallScore}/10）
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
+              {brightnessReport.palaceReports.slice(0, 12).map((pr: any, i: number) => (
+                <div key={i} style={{
+                  padding: "10px 12px", borderRadius: 10,
+                  background: pr.verdict.includes("强") ? "rgba(212,65,21,0.06)" : pr.verdict.includes("弱") ? "rgba(51,51,51,0.03)" : "rgba(51,51,51,0.02)",
+                  border: `1px solid ${pr.verdict.includes("强") ? "rgba(212,65,21,0.15)" : "rgba(51,51,51,0.06)"}`,
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{pr.palaceName}</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-soft)" }}>
+                    得分 {pr.totalScore}/{pr.maxLevel || 10} · {pr.verdict}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {brightnessReport.topStars && brightnessReport.topStars.length > 0 && (
+              <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 10, background: "rgba(212,65,21,0.05)", border: "1px solid rgba(212,65,21,0.1)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--gold)", marginBottom: 8 }}>⭐ 庙旺之星（力量最强）</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {brightnessReport.topStars.map((s: any, i: number) => (
+                    <span key={i} style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(212,65,21,0.1)", color: "var(--gold)", fontSize: 12, fontWeight: 600 }}>
+                      {s.star}（{s.palace}·{s.level}）
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {brightnessReport.weakStars && brightnessReport.weakStars.length > 0 && (
+              <div style={{ marginTop: 8, padding: "12px 16px", borderRadius: 10, background: "rgba(51,51,51,0.03)", border: "1px solid rgba(51,51,51,0.08)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-soft)", marginBottom: 8 }}>⚠ 陷弱之星（力量最弱）</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {brightnessReport.weakStars.map((s: any, i: number) => (
+                    <span key={i} style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(51,51,51,0.06)", color: "var(--ink-soft)", fontSize: 12 }}>
+                      {s.star}（{s.palace}·{s.level}）
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* 运限分析 */}
+        {horoscopeReport && (
+          <section style={{ marginTop: 24 }}>
+            <h2 className="section-heading">运限分析 · 大限流年</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12, marginTop: 12 }}>
+              <div style={{ padding: "16px", borderRadius: 12, border: "1px solid rgba(212,65,21,0.12)", background: "rgba(212,65,21,0.04)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--gold)", marginBottom: 8, letterSpacing: "0.04em" }}>大限 · {horoscopeReport.decadal.range}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{horoscopeReport.decadal.ganZhi} · {horoscopeReport.decadal.palaceName}</div>
+                <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>{horoscopeReport.decadal.focusArea}</div>
+              </div>
+              <div style={{ padding: "16px", borderRadius: 12, border: "1px solid rgba(49,121,148,0.12)", background: "rgba(49,121,148,0.04)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#317994", marginBottom: 8, letterSpacing: "0.04em" }}>流年 · {horoscopeReport.yearly.year}年</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginBottom: 4 }}>{horoscopeReport.yearly.ganZhi} · {horoscopeReport.yearly.palaceName}</div>
+                <div style={{ fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.6 }}>
+                  {horoscopeReport.yearly.keyThemes?.map((t: string, i: number) => (
+                    <div key={i}>· {t}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {horoscopeReport.summary && (
+              <p style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.8, marginTop: 12 }}>{horoscopeReport.summary}</p>
+            )}
+          </section>
+        )}
+
+        {/* 星曜组合 */}
+        {starComboReport && starComboReport.length > 0 && (
+          <section style={{ marginTop: 24 }}>
+            <h2 className="section-heading">星曜组合 · 定格局</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+              {starComboReport.map((sc: StarComboReport, i: number) => (
+                <div key={i} style={{
+                  padding: "12px 16px", borderRadius: 10,
+                  background: sc.category === "吉格" ? "rgba(212,65,21,0.04)" : sc.category === "凶格" ? "rgba(200,60,40,0.04)" : "rgba(51,51,51,0.02)",
+                  border: `1px solid ${sc.category === "吉格" ? "rgba(212,65,21,0.12)" : sc.category === "凶格" ? "rgba(200,60,40,0.12)" : "rgba(51,51,51,0.06)"}`,
+                }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{sc.comboName}</span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: "1px 8px", borderRadius: 20,
+                      background: sc.category === "吉格" ? "rgba(212,65,21,0.1)" : "rgba(200,60,40,0.1)",
+                      color: sc.category === "吉格" ? "var(--gold)" : "var(--red)",
+                    }}>{sc.category}</span>
+                    <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>{sc.palaceName}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6 }}>{sc.interpretation}</div>
+                  {sc.ancientText && (
+                    <div style={{ fontSize: 12, color: "var(--ink-soft)", fontStyle: "italic", marginTop: 4 }}>
+                      📖 {sc.ancientText}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
       </main>
     </div>
   );
